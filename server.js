@@ -12,7 +12,9 @@ const supabase = createClient(
   process.env.SUPABASE_PUBLISHABLE_KEY
 );
 
-app.use(express.static('public'));
+app.get('/', (req, res) => {
+     res.sendFile(__dirname + '/public/index.html');
+   });
 
 // Ruta de prueba: trae todos los alumnos
 app.get('/api/alumnos', async (req, res) => {
