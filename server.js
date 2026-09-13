@@ -1,20 +1,25 @@
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
 import express from 'express';
 import dotenv from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
+// 1. SOLUCIÓN: Definir __dirname para ES Modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 dotenv.config();
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_PUBLISHABLE_KEY
 );
 
-app.get('/', (req, res) => {
-     res.sendFile(__dirname + '/public/index.html');
-   });
+// 2. SOLUCIÓN: Servir la carpeta public correctamente
+app.use(express.static(join(__dirname, 'public')));
 
 // Ruta de prueba: trae todos los alumnos
 app.get('/api/alumnos', async (req, res) => {
@@ -69,3 +74,6 @@ app.get('/api/cuenta/:dni', async (req, res) => {
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Servidor funcionando en http://localhost:${PORT}`);
 });
+
+// 3. SOLUCIÓN: Exportar para Vercel
+export default app;
