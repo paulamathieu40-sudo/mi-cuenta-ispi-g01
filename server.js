@@ -47,9 +47,10 @@ app.get('/api/cuenta/:dni', async (req, res) => {
     .eq('dni', dni)
     .maybeSingle();
 
-  if (errorAlumno) {
-    return res.status(500).json({ error: 'Error al consultar el alumno' });
-  }
+ if (errorAlumno) {
+    console.log('ERROR SUPABASE:', errorAlumno);
+    return res.status(500).json({ error: 'Error al consultar el alumno', detalle: errorAlumno.message });
+}
   if (!alumno) {
     return res.status(404).json({ error: 'Alumno no encontrado' });
   }
