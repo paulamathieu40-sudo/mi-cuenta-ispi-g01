@@ -1,15 +1,11 @@
 {
-  "name": "mi-cuenta-ispi",
-  "version": "0.1.0",
-  "private": true,
+  "name": "mi-cuenta-ispi-g01",
+  "version": "1.0.0",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start"
+    "dev": "node server.js",
+    "start": "node server.js"
   },
   "dependencies": {
-    "next": "latest",
-    "react": "latest",
-    "react-dom": "latest"
+    "express": "^4.18.2"
   }
 }
