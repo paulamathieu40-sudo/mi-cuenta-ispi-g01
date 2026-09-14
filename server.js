@@ -88,3 +88,4 @@ app.get('/api/cuenta/:dni', async (req, res) => {
 
 // ✅ EXPORTAR para que Vercel lo use como Serverless Function
 export default app;
+export default app;
