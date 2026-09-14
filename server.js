@@ -1,5 +1,4 @@
-import express from 'express';
-import dotenv from 'dotenv';
+export default app;
 import { createClient } from '@supabase/supabase-js';
 
 dotenv.config();
