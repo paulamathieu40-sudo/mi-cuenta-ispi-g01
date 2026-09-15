@@ -15,6 +15,7 @@ const app = express();
 // Middleware para leer JSON (muy importante para APIs)
 app.use(express.json());
 
+// Crear cliente de Supabase
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_PUBLISHABLE_KEY
@@ -77,15 +78,5 @@ app.get('/api/cuenta/:dni', async (req, res) => {
   res.json({ alumno, cuotas, saldo });
 });
 
-// ❌ ELIMINADO: app.listen NO funciona en Vercel. 
-// Si querés probarlo en tu computadora, descomentá las siguientes 3 líneas, 
-// pero para Vercel DEBEN estar comentadas o borradas.
-
-// const PORT = process.env.PORT || 3000;
-// app.listen(PORT, '0.0.0.0', () => {
-//   console.log(`Servidor funcionando en http://localhost:${PORT}`);
-// });
-
 // ✅ EXPORTAR para que Vercel lo use como Serverless Function
 export default app;
-
