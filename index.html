@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Cuenta - ISPI</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="app-container">
+        
+        <!-- HEADER -->
+        <header class="header">
+            <div class="logo">
+                <div class="logo-circle">ISPI</div>
+            </div>
+            <h1>MI CUENTA ISPI</h1>
+            <p class="subtitle">Visualizá tu estado de cuenta</p>
+        </header>
+
+        <!-- BUSCADOR DNI -->
+        <section class="card search-card">
+            <div class="card-header">
+                <span class="material-icons-round">person</span>
+                <div>
+                    <h3>Ingresá tu DNI</h3>
+                    <p>Para consultar tu información</p>
+                </div>
+            </div>
+            <div class="input-group">
+                <span class="material-icons-round">person_outline</span>
+                <input type="text" id="dniInput" placeholder="Ej: 34567890">
+            </div>
+            <button class="btn-primary" onclick="consultar()">
+                <span class="material-icons-round">search</span>
+                Consultar
+            </button>
+            <p class="security-note">
+                <span class="material-icons-round">lock</span>
+                Tus datos están protegidos y son confidenciales
+            </p>
+        </section>
+
+        <!-- LOADING -->
+        <div id="loading" style="display:none; text-align:center; padding:20px;">
+            <div class="spinner"></div>
+            <p>Buscando...</p>
+        </div>
+
+        <!-- ERROR -->
+        <div id="error" style="display:none; text-align:center; padding:20px; color:#f87171;"></div>
+
+        <!-- INFORMACIÓN DEL ALUMNO -->
+        <section class="card info-card" id="infoCard" style="display:none;">
+            <div class="card-header">
+                <span class="material-icons-round">school</span>
+                <h3>Información del alumno</h3>
+            </div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <label>Nombre y Apellido</label>
+                    <p id="nombre">—</p>
+                </div>
+                <div class="info-item">
+                    <label>DNI</label>
+                    <p id="dni">—</p>
+                </div>
+                <div class="info-item">
+                    <label>Carrera</label>
+                    <p id="carrera">—</p>
+                </div>
+                <div class="info-item">
+                    <label>Curso</label>
+                    <p id="curso">—</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- RESUMEN DE CUENTA -->
+        <section class="card resumen-card" id="resumenCard" style="display:none;">
+            <div class="card-header">
+                <span class="material-icons-round">description</span>
+                <h3>Resumen de cuenta</h3>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-box blue">
+                    <span class="material-icons-round">receipt_long</span>
+                    <p>Total cuotas</p>
+                    <h2 id="totalCuotas">0</h2>
+                </div>
+                <div class="stat-box green">
+                    <span class="material-icons-round">check_circle</span>
+                    <p>Cuotas pagadas</p>
+                    <h2 id="pagadas">0</h2>
+                </div>
+                <div class="stat-box orange">
+                    <span class="material-icons-round">info</span>
+                    <p>Cuotas pendientes</p>
+                    <h2 id="pendientes">0</h2>
+                </div>
+            </div>
+            <div class="status-bar">
+                <div class="status-item">
+                    <span>Estado actual</span>
+                    <span class="badge aldia" id="estadoActual">—</span>
+                </div>
+                <div class="status-item">
+                    <span>Último pago</span>
+                    <span id="ultimoPago">—</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- DETALLE DE CUOTAS -->
+        <section class="card cuotas-card" id="cuotasCard" style="display:none;">
+            <div class="card-header">
+                <span class="material-icons-round">receipt</span>
+                <h3>Detalle de cuotas</h3>
+                <a href="#" class="link">Ver historial completo ›</a>
+            </div>
+            <div class="cuotas-list" id="cuotasList">
+                <!-- Se llena con JS -->
+            </div>
+        </section>
+
+        <!-- ACCESOS RÁPIDOS -->
+        <section class="card accesos-card">
+            <h3>Accesos rápidos</h3>
+            <div class="quick-grid">
+                <button class="quick-btn">
+                    <span class="material-icons-round">history</span>
+                    <span>Historial de pagos</span>
+                </button>
+                <button class="quick-btn">
+                    <span class="material-icons-round">download</span>
+                    <span>Descargar comprobantes</span>
+                </button>
+                <button class="quick-btn">
+                    <span class="material-icons-round">info</span>
+                    <span>Información académica</span>
+                </button>
+                <button class="quick-btn">
+                    <span class="material-icons-round">headset_mic</span>
+                    <span>Ayuda y contacto</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- BOTTOM NAV -->
+        <nav class="bottom-nav">
+            <button class="nav-item active">
+                <span class="material-icons-round">home</span>
+                <span>Inicio</span>
+            </button>
+            <button class="nav-item">
+                <span class="material-icons-round">receipt_long</span>
+                <span>Estado de cuenta</span>
+            </button>
+            <button class="nav-item">
+                <span class="material-icons-round">history</span>
+                <span>Historial</span>
+            </button>
+            <button class="nav-item">
+                <span class="material-icons-round">person</span>
+                <span>Perfil</span>
+            </button>
+        </nav>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

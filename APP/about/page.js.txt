@@ -1,0 +1,8 @@
+export default function AboutPage() {
+  return (
+    <div style={{ padding: '40px' }}>
+      <h1>Sobre mí</h1>
+      <p>Bienvenido a mi página personal.</p>
+    </div>
+  );
+}

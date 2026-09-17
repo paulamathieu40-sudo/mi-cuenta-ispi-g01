@@ -1,0 +1,46 @@
+'use client'
+import { useState, useEffect } from 'react'
+import { supabase } from '../lib/supabaseClient'
+
+export default function Home() {
+  const [alumnos, setAlumnos] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    cargarAlumnos()
+  }, [])
+
+  async function cargarAlumnos() {
+    const { data, error } = await supabase
+      .from('alumnos')
+      .select('*')
+    
+    if (error) {
+      console.error('Error:', error)
+    } else {
+      setAlumnos(data)
+    }
+    setLoading(false)
+  }
+
+  return (
+    <div style={{ padding: '20px', fontFamily: 'Arial' }}>
+      <h1>Mi Cuenta ISPI - Grupo 01</h1>
+      
+      {loading ? (
+        <p>Cargando datos...</p>
+      ) : (
+        <div>
+          <h2>Alumnos Registrados: {alumnos.length}</h2>
+          <ul>
+            {alumnos.map((alumno) => (
+              <li key={alumno.id}>
+                {alumno.nombre} - {alumno.email}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  )
+}

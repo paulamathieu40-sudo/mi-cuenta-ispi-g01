@@ -1,0 +1,13 @@
+export default function Footer() {
+  return (
+    <footer style={{
+      backgroundColor: '#333',
+      color: 'white',
+      textAlign: 'center',
+      padding: '20px',
+      marginTop: '40px'
+    }}>
+      <p>&copy; 2026 Mi Cuenta ISPI. Todos los derechos reservados.</p>
+    </footer>
+  );
+}

@@ -1,0 +1,44 @@
+import Link from 'next/link';
+
+export default function Navbar() {
+  return (
+    <nav style={{
+      backgroundColor: '#333',
+      padding: '15px 30px',
+      display: 'flex',
+      gap: '20px'
+    }}>
+      <Link href="/" style={{ color: 'white', textDecoration: 'none' }}>
+        Inicio
+      </Link>
+      <Link href="/about" style={{ color: 'white', textDecoration: 'none' }}>
+        Sobre mí
+      </Link>
+      <Link href="/contact" style={{ color: 'white', textDecoration: 'none' }}>
+        Contacto
+      </Link>
+    </nav>
+  );
+}
+import Link from 'next/link';
+
+export default function Navbar() {
+  return (
+    <nav style={{
+      backgroundColor: '#333',
+      padding: '15px 30px',
+      display: 'flex',
+      gap: '20px'
+    }}>
+      <Link href="/" style={{ color: 'white', textDecoration: 'none' }}>
+        Inicio
+      </Link>
+      <Link href="/about" style={{ color: 'white', textDecoration: 'none' }}>
+        Sobre mí
+      </Link>
+      <Link href="/contact" style={{ color: 'white', textDecoration: 'none' }}>
+        Contacto
+      </Link>
+    </nav>
+  );
+}
