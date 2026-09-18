@@ -6,8 +6,8 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
 console.log('Supabase conectado');
 
 async function consultar() {
-    const dniInput = document.getElementById('dniInput');
-    const dni = dniInput ? dniInput.value.trim() : '';
+    var dniInput = document.getElementById('dniInput');
+    var dni = dniInput ? dniInput.value.trim() : '';
     
     if (!dni) {
         alert('Por favor ingresa tu DNI');
@@ -15,23 +15,28 @@ async function consultar() {
     }
     
     try {
-        const { data: alumno, error } = await supabaseClient
+        var result = await supabaseClient
             .from('alumnos')
             .select('*')
             .eq('dni', dni)
             .single();
+        
+        var alumno = result.data;
+        var error = result.error;
         
         if (error || !alumno) {
             alert('DNI no encontrado');
             return;
         }
         
-        const { data: cuotas } = await supabaseClient
+        var cuotasResult = await supabaseClient
             .from('cuotas')
             .select('*')
             .eq('alumno_id', alumno.id);
         
-        mostrarDatos(alumno, cuotas || []);
+        var cuotas = cuotasResult.data || [];
+        
+        mostrarDatos(alumno, cuotas);
         
     } catch (err) {
         console.error('Error:', err);
@@ -45,9 +50,14 @@ function mostrarDatos(alumno, cuotas) {
     document.getElementById('carrera').textContent = alumno.carrera;
     document.getElementById('curso').textContent = alumno.Curso;
     
-    const total = cuotas.length;
-    const pagadas = cuotas.filter(c => c.Pagado === true).length;
-    const pendientes = total - pagadas;
+    var total = cuotas.length;
+    var pagadas = 0;
+    for (var i = 0; i < cuotas.length; i++) {
+        if (cuotas[i].Pagado === true) {
+            pagadas++;
+        }
+    }
+    var pendientes = total - pagadas;
     
     document.getElementById('totalCuotas').textContent = total;
     document.getElementById('pagadas').textContent = pagadas;
@@ -57,15 +67,17 @@ function mostrarDatos(alumno, cuotas) {
     document.getElementById('resumenCard').style.display = 'block';
     document.getElementById('cuotasCard').style.display = 'block';
     
-    const cuotasList = document.getElementById('cuotasList');
+    var cuotasList = document.getElementById('cuotasList');
     cuotasList.innerHTML = '';
     
-    cuotas.forEach(cuota => {
-        const item = document.createElement('div');
+    for (var j = 0; j < cuotas.length; j++) {
+        var cuota = cuotas[j];
+        var item = document.createElement('div');
         item.className = 'cuota-item';
-        const estado = cuota.Pagado ? 'pagada' : 'pendiente';
-        const icono = cuota.Pagado ? 'check' : 'info';
-        const texto = cuota.Pagado ? 'Pagada' : 'Pendiente';
+        
+        var estado = cuota.Pagado ? 'pagada' : 'pendiente';
+        var icono = cuota.Pagado ? 'check' : 'info';
+        var texto = cuota.Pagado ? 'Pagada' : 'Pendiente';
         
         item.innerHTML = '<div class="cuota-icon ' + estado + '">' +
             '<span class="material-icons-round">' + icono + '</span></div>' +
@@ -74,7 +86,7 @@ function mostrarDatos(alumno, cuotas) {
             '<div class="cuota-status ' + estado + '">' + texto + '</div>';
         
         cuotasList.appendChild(item);
-    });
+    }
     
     document.getElementById('infoCard').scrollIntoView({ behavior: 'smooth' });
 }
