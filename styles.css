@@ -405,3 +405,14 @@ body {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
+/* Ocultar el Consultar duplicado que aparece fuera del botón */
+#btnConsultar + span.material-icons-round,
+#btnConsultar + .consultar-text {
+    display: none !important;
+}
+
+/* Si el duplicado viene de un pseudo-elemento CSS */
+.btn-primary::after,
+.btn-primary::before {
+    content: none !important;
+}
