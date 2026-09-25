@@ -24,17 +24,14 @@ body {
     padding: 20px 0 30px;
 }
 
-.logo-circle {
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #4facfe, #00f2fe);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 15px;
-    font-weight: 700;
-    font-size: 18px;
+.logo-img {
+  width: 140px;
+  height: auto;
+  display: block;
+  margin: 0 auto 20px auto;
+  background: white;
+  padding: 10px;
+  border-radius: 12px;
 }
 
 .header h1 {
