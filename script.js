@@ -135,3 +135,46 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', consultar);
     }
 });
+// Función para volver al inicio
+function volverInicio() {
+    document.querySelectorAll('.card').forEach(card => {
+        if (!card.classList.contains('search-card') && !card.classList.contains('accesos-card')) {
+            card.style.display = 'none';
+        }
+    });
+    document.querySelector('.search-card').style.display = 'block';
+    document.querySelector('.accesos-card').style.display = 'block';
+}
+
+// Función para mostrar una sección específica
+function mostrarSeccion(idSeccion) {
+    document.querySelector('.search-card').style.display = 'none';
+    document.querySelector('.accesos-card').style.display = 'none';
+    document.querySelectorAll('.card').forEach(card => {
+        if (card.id !== idSeccion) card.style.display = 'none';
+    });
+    document.getElementById(idSeccion).style.display = 'block';
+}
+
+// Conectar botones de accesos rápidos
+document.addEventListener('DOMContentLoaded', () => {
+    const quickBtns = document.querySelectorAll('.quick-btn');
+    if (quickBtns[0]) quickBtns[0].onclick = () => mostrarSeccion('historialCard');
+    if (quickBtns[1]) quickBtns[1].onclick = () => mostrarSeccion('comprobantesCard');
+    if (quickBtns[2]) quickBtns[2].onclick = () => mostrarSeccion('academicaCard');
+    if (quickBtns[3]) quickBtns[3].onclick = () => mostrarSeccion('ayudaCard');
+});
+
+// Función para descargar comprobante
+function descargarComprobante(dni, concepto, fecha, importe) {
+    const contenido = `COMPROBANTE DE PAGO\n===================\n\nAlumno DNI: ${dni}\nConcepto: ${concepto}\nFecha: ${fecha}\nImporte: $${importe}\n\nEstado: PAGADO\n===================\nGenerado el: ${new Date().toLocaleDateString('es-AR')}`;
+    const blob = new Blob([contenido], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `comprobante_${dni}_${concepto.replace(/\s/g, '_')}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}

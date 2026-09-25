@@ -416,3 +416,48 @@ body {
 .btn-primary::before {
     content: none !important;
 }
+.btn-secondary {
+    background: transparent;
+    color: #8a94b8;
+    border: 1px solid #8a94b8;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 15px;
+    font-size: 14px;
+}
+
+.btn-secondary:hover {
+    background: rgba(138, 148, 184, 0.1);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.card-header h3 {
+    color: white;
+    margin: 0;
+}
+
+.comprobante-item, .historial-item {
+    background: rgba(255,255,255,0.05);
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn-download {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+}
