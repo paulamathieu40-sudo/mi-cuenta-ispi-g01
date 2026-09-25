@@ -155,26 +155,35 @@ function mostrarSeccion(idSeccion) {
     });
     document.getElementById(idSeccion).style.display = 'block';
 }
-
-// Conectar botones de accesos rápidos
+// Conectar botones del menú inferior (bottom-nav)
 document.addEventListener('DOMContentLoaded', () => {
-    const quickBtns = document.querySelectorAll('.quick-btn');
-    if (quickBtns[0]) quickBtns[0].onclick = () => mostrarSeccion('historialCard');
-    if (quickBtns[1]) quickBtns[1].onclick = () => mostrarSeccion('comprobantesCard');
-    if (quickBtns[2]) quickBtns[2].onclick = () => mostrarSeccion('academicaCard');
-    if (quickBtns[3]) quickBtns[3].onclick = () => mostrarSeccion('ayudaCard');
+    const navBtns = document.querySelectorAll('.bottom-nav .nav-item');
+    
+    navBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Quitar clase active de todos
+            navBtns.forEach(b => b.classList.remove('active'));
+            // Agregar clase active al clickeado
+            this.classList.add('active');
+            
+            const texto = this.textContent.toLowerCase().trim();
+            
+            if (texto.includes('estado')) {
+                // Volver al inicio
+                document.querySelectorAll('.card').forEach(card => {
+                    if (!card.classList.contains('search-card') && !card.classList.contains('accesos-card')) {
+                        card.style.display = 'none';
+                    }
+                });
+                document.querySelector('.search-card').style.display = 'block';
+                document.querySelector('.accesos-card').style.display = 'block';
+            } 
+            else if (texto.includes('historial')) {
+                mostrarSeccion('historialCard');
+            } 
+            else if (texto.includes('perfil')) {
+                mostrarSeccion('perfilCard');
+            }
+        });
+    });
 });
-
-// Función para descargar comprobante
-function descargarComprobante(dni, concepto, fecha, importe) {
-    const contenido = `COMPROBANTE DE PAGO\n===================\n\nAlumno DNI: ${dni}\nConcepto: ${concepto}\nFecha: ${fecha}\nImporte: $${importe}\n\nEstado: PAGADO\n===================\nGenerado el: ${new Date().toLocaleDateString('es-AR')}`;
-    const blob = new Blob([contenido], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `comprobante_${dni}_${concepto.replace(/\s/g, '_')}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-}
