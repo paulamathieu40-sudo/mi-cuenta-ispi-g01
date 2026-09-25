@@ -57,13 +57,104 @@ async function consultar() {
         btn.disabled = false;
     }
 }
-
 function mostrarDatos(alumno, cuotas) {
+    // Datos básicos
     document.getElementById('nombre').textContent = `${alumno.nombre || ''} ${alumno.apellido || ''}`.trim() || 'No especificado';
     document.getElementById('dni').textContent = alumno.dni || 'No especificado';
     document.getElementById('carrera').textContent = alumno.carrera || 'No especificada';
     document.getElementById('curso').textContent = alumno.curso || alumno.Curso || 'No especificado';
 
+    const total = cuotas.length;
+    const pagadas = cuotas.filter(c => c.Pagado === true || c.Pagado === 'true' || c.pagado === true).length;
+    const pendientes = total - pagadas;
+
+    document.getElementById('totalCuotas').textContent = total;
+    document.getElementById('pagadas').textContent = pagadas;
+    document.getElementById('pendientes').textContent = pendientes;
+
+    const estadoEl = document.getElementById('estadoActual');
+    if (pendientes === 0 && total > 0) {
+        estadoEl.textContent = 'Al día'; estadoEl.className = 'badge aldia';
+    } else if (pendientes > 0) {
+        estadoEl.textContent = 'Con deuda'; estadoEl.className = 'badge condeuda';
+    } else {
+        estadoEl.textContent = 'Sin cuotas'; estadoEl.className = 'badge';
+    }
+
+    const ultimoPago = cuotas.find(c => c.Pagado === true || c.Pagado === 'true' || c.pagado === true);
+    document.getElementById('ultimoPago').textContent = ultimoPago 
+        ? new Date(ultimoPago.vencimiento).toLocaleDateString('es-AR') 
+        : 'Sin registros';
+
+    // === PERFIL ===
+    const perfilInfo = document.getElementById('perfilInfo');
+    if (perfilInfo) {
+        perfilInfo.innerHTML = `
+            <div class="comprobante-item"><div><strong>Nombre:</strong> ${alumno.nombre || ''} ${alumno.apellido || ''}</div></div>
+            <div class="comprobante-item"><div><strong>DNI:</strong> ${alumno.dni || 'No especificado'}</div></div>
+            <div class="comprobante-item"><div><strong>Carrera:</strong> ${alumno.carrera || 'No especificada'}</div></div>
+            <div class="comprobante-item"><div><strong>Curso:</strong> ${alumno.curso || alumno.Curso || 'No especificado'}</div></div>
+        `;
+    }
+
+    // === HISTORIAL DE PAGOS ===
+    const historialList = document.getElementById('historialList');
+    if (historialList) {
+        historialList.innerHTML = '';
+        if (cuotas.length === 0) {
+            historialList.innerHTML = '<p style="text-align:center; color:#8a94b8; padding:20px;">No hay pagos registrados.</p>';
+        } else {
+            cuotas.forEach(cuota => {
+                const estaPagada = cuota.Pagado === true || cuota.Pagado === 'true' || cuota.pagado === true;
+                let fecha = 'Sin fecha';
+                if (cuota.vencimiento) {
+                    try { fecha = new Date(cuota.vencimiento).toLocaleDateString('es-AR'); } catch (e) { fecha = cuota.vencimiento; }
+                }
+                const item = document.createElement('div');
+                item.className = 'historial-item';
+                item.innerHTML = `
+                    <div><strong>${cuota.Concepto || cuota.concepto || 'Cuota'}</strong><br><small style="color:#8a94b8;">Vence: ${fecha}</small></div>
+                    <div style="color: ${estaPagada ? '#22c55e' : '#ef4444'}; font-weight:bold;">${estaPagada ? '✓ Pagada' : '⏳ Pendiente'}</div>
+                `;
+                historialList.appendChild(item);
+            });
+        }
+    }
+
+    // === COMPROBANTES ===
+    const comprobantesList = document.getElementById('comprobantesList');
+    if (comprobantesList) {
+        comprobantesList.innerHTML = '';
+        const cuotasPagadas = cuotas.filter(c => c.Pagado === true || c.Pagado === 'true' || c.pagado === true);
+        if (cuotasPagadas.length === 0) {
+            comprobantesList.innerHTML = '<p style="text-align:center; color:#8a94b8; padding:20px;">No hay comprobantes disponibles (solo cuotas pagadas tienen comprobante).</p>';
+        } else {
+            cuotasPagadas.forEach(cuota => {
+                let fecha = 'Sin fecha';
+                if (cuota.vencimiento) {
+                    try { fecha = new Date(cuota.vencimiento).toLocaleDateString('es-AR'); } catch (e) { fecha = cuota.vencimiento; }
+                }
+                const item = document.createElement('div');
+                item.className = 'comprobante-item';
+                item.innerHTML = `
+                    <div><strong>${cuota.Concepto || cuota.concepto || 'Cuota'}</strong><br><small style="color:#8a94b8;">Fecha: ${fecha} - Importe: $${cuota.importe || '0'}</small></div>
+                    <button class="btn-download" onclick="descargarComprobante('${alumno.dni}', '${cuota.Concepto || cuota.concepto}', '${fecha}', '${cuota.importe || '0'}')"> Descargar</button>
+                `;
+                comprobantesList.appendChild(item);
+            });
+        }
+    }
+
+    // Mostrar las tarjetas de resultados
+    document.getElementById('infoCard').style.display = 'block';
+    document.getElementById('resumenCard').style.display = 'block';
+    document.getElementById('cuotasCard').style.display = 'block';
+
+    // Scroll suave a los resultados
+    setTimeout(() => {
+        document.getElementById('infoCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+}
     const total = cuotas.length;
     const pagadas = cuotas.filter(c => c.Pagado === true || c.Pagado === 'true' || c.pagado === true).length;
     const pendientes = total - pagadas;
