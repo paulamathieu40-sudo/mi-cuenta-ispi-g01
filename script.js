@@ -25,7 +25,6 @@ async function consultar() {
     document.getElementById('loading').style.display = 'block';
     document.getElementById('error').style.display = 'none';
     
-    // Ocultar todas las tarjetas de resultado al iniciar nueva búsqueda
     ['infoCard', 'resumenCard', 'cuotasCard', 'perfilCard', 'historialCard', 'comprobantesCard', 'academicaCard', 'ayudaCard'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.style.display = 'none';
@@ -68,13 +67,11 @@ async function consultar() {
 }
 
 function mostrarDatos(alumno, cuotas) {
-    // 1. Información del alumno
     document.getElementById('nombre').textContent = `${alumno.nombre || ''} ${alumno.apellido || ''}`.trim() || 'No especificado';
     document.getElementById('dni').textContent = alumno.dni || 'No especificado';
     document.getElementById('carrera').textContent = alumno.carrera || 'No especificada';
     document.getElementById('curso').textContent = alumno.curso || alumno.Curso || 'No especificado';
 
-    // 2. Resumen de cuenta
     const total = cuotas.length;
     const pagadas = cuotas.filter(c => c.Pagado === true || c.Pagado === 'true' || c.pagado === true).length;
     const pendientes = total - pagadas;
@@ -97,7 +94,7 @@ function mostrarDatos(alumno, cuotas) {
         ? new Date(ultimoPago.vencimiento).toLocaleDateString('es-AR')
         : 'Sin registros';
 
-    // 3. Perfil
+    // PERFIL
     const perfilInfo = document.getElementById('perfilInfo');
     if (perfilInfo) {
         perfilInfo.innerHTML = `
@@ -108,7 +105,7 @@ function mostrarDatos(alumno, cuotas) {
         `;
     }
 
-    // 4. Historial
+    // HISTORIAL
     const historialList = document.getElementById('historialList');
     if (historialList) {
         historialList.innerHTML = '';
@@ -132,7 +129,7 @@ function mostrarDatos(alumno, cuotas) {
         }
     }
 
-    // 5. Comprobantes
+    // COMPROBANTES
     const comprobantesList = document.getElementById('comprobantesList');
     if (comprobantesList) {
         comprobantesList.innerHTML = '';
@@ -156,7 +153,7 @@ function mostrarDatos(alumno, cuotas) {
         }
     }
 
-    // 6. Detalle de cuotas
+    // CUOTAS LIST
     const cuotasList = document.getElementById('cuotasList');
     if (cuotasList) {
         cuotasList.innerHTML = '';
@@ -191,7 +188,6 @@ function mostrarDatos(alumno, cuotas) {
         }
     }
 
-    // Mostrar tarjetas principales
     document.getElementById('infoCard').style.display = 'block';
     document.getElementById('resumenCard').style.display = 'block';
     document.getElementById('cuotasCard').style.display = 'block';
@@ -215,8 +211,6 @@ Importe:    $${importe}
 Estado: PAGADO
 
 ========================================
-Este comprobante es generado automáticamente.
-========================================
     `.trim();
 
     const blob = new Blob([contenido], { type: 'text/plain;charset=utf-8' });
@@ -234,8 +228,7 @@ function volverInicio() {
     document.querySelector('.search-card').style.display = 'block';
     document.querySelector('.accesos-card').style.display = 'block';
     
-    const detalleCards = ['infoCard', 'resumenCard', 'cuotasCard', 'historialCard', 'comprobantesCard', 'academicaCard', 'ayudaCard', 'perfilCard'];
-    detalleCards.forEach(id => {
+    ['infoCard', 'resumenCard', 'cuotasCard', 'historialCard', 'comprobantesCard', 'academicaCard', 'ayudaCard', 'perfilCard'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.style.display = 'none';
     });
@@ -245,8 +238,7 @@ function mostrarSeccion(idSeccion) {
     document.querySelector('.search-card').style.display = 'none';
     document.querySelector('.accesos-card').style.display = 'none';
     
-    const detalleCards = ['infoCard', 'resumenCard', 'cuotasCard', 'historialCard', 'comprobantesCard', 'academicaCard', 'ayudaCard', 'perfilCard'];
-    detalleCards.forEach(id => {
+    ['infoCard', 'resumenCard', 'cuotasCard', 'historialCard', 'comprobantesCard', 'academicaCard', 'ayudaCard', 'perfilCard'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.style.display = 'none';
     });
@@ -257,79 +249,63 @@ function mostrarSeccion(idSeccion) {
     }
 }
 
-// INICIALIZACIÓN DE EVENTOS
+function irAEstado() {
+    volverInicio();
+    if (alumnoActual) {
+        setTimeout(() => {
+            document.getElementById('infoCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 200);
+    }
+}
+
+function abrirHistorial() {
+    if (!alumnoActual) {
+        alert('Primero consultá tu DNI.');
+        return;
+    }
+    mostrarSeccion('historialCard');
+}
+
+function abrirComprobantes() {
+    if (!alumnoActual) {
+        alert('Primero consultá tu DNI.');
+        return;
+    }
+    mostrarSeccion('comprobantesCard');
+}
+
+function abrirInfoAcademica() {
+    if (!alumnoActual) {
+        alert('Primero consultá tu DNI.');
+        return;
+    }
+    const academicaInfo = document.getElementById('academicaInfo');
+    if (academicaInfo) {
+        academicaInfo.innerHTML = `
+            <p><strong>Nombre:</strong> ${alumnoActual.nombre || ''} ${alumnoActual.apellido || ''}</p>
+            <p><strong>DNI:</strong> ${alumnoActual.dni || 'No especificado'}</p>
+            <p><strong>Carrera:</strong> ${alumnoActual.carrera || 'No especificada'}</p>
+            <p><strong>Curso:</strong> ${alumnoActual.curso || alumnoActual.Curso || 'No especificado'}</p>
+        `;
+    }
+    mostrarSeccion('academicaCard');
+}
+
+function abrirAyuda() {
+    mostrarSeccion('ayudaCard');
+}
+
+function abrirPerfil() {
+    if (!alumnoActual) {
+        alert('Primero consultá tu DNI.');
+        return;
+    }
+    mostrarSeccion('perfilCard');
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-    // Botón consultar
     const btn = document.getElementById('btnConsultar');
     if (btn) {
         btn.addEventListener('click', consultar);
     }
-
-    // Botones de accesos rápidos
-    const accesosRapidos = document.querySelectorAll('.quick-btn');
-    accesosRapidos.forEach(btn => {
-        btn.addEventListener('click', function () {
-            const seccion = this.getAttribute('data-seccion');
-            
-            if (!alumnoActual && seccion !== 'ayuda') {
-                alert('Primero consultá tu DNI.');
-                return;
-            }
-            
-            if (seccion === 'historial') {
-                mostrarSeccion('historialCard');
-            } else if (seccion === 'comprobantes') {
-                mostrarSeccion('comprobantesCard');
-            } else if (seccion === 'academica') {
-                mostrarSeccion('academicaCard');
-                const academicaInfo = document.getElementById('academicaInfo');
-                if (academicaInfo && alumnoActual) {
-                    academicaInfo.innerHTML = `
-                        <p><strong>Nombre:</strong> ${alumnoActual.nombre || ''} ${alumnoActual.apellido || ''}</p>
-                        <p><strong>DNI:</strong> ${alumnoActual.dni || 'No especificado'}</p>
-                        <p><strong>Carrera:</strong> ${alumnoActual.carrera || 'No especificada'}</p>
-                        <p><strong>Curso:</strong> ${alumnoActual.curso || alumnoActual.Curso || 'No especificado'}</p>
-                    `;
-                }
-            } else if (seccion === 'ayuda') {
-                mostrarSeccion('ayudaCard');
-            }
-        });
-    });
-
-    // Botones del menú inferior (bottom-nav)
-    const navBtns = document.querySelectorAll('.bottom-nav .nav-item');
-    navBtns.forEach(btn => {
-        btn.addEventListener('click', function () {
-            navBtns.forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-
-            const texto = this.textContent.toLowerCase().trim();
-
-            if (texto.includes('inicio')) {
-                volverInicio();
-            } else if (texto.includes('estado')) {
-                volverInicio();
-                if (alumnoActual) {
-                    setTimeout(() => {
-                        document.getElementById('infoCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }, 200);
-                }
-            } else if (texto.includes('historial')) {
-                if (!alumnoActual) {
-                    alert('Primero consultá tu DNI.');
-                    volverInicio();
-                    return;
-                }
-                mostrarSeccion('historialCard');
-            } else if (texto.includes('perfil')) {
-                if (!alumnoActual) {
-                    alert('Primero consultá tu DNI.');
-                    volverInicio();
-                    return;
-                }
-                mostrarSeccion('perfilCard');
-            }
-        });
-    });
 });
