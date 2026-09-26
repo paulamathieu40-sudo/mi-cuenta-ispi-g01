@@ -1,3 +1,6 @@
+// ============================================
+// CONFIGURACIÓN SUPABASE
+// ============================================
 const SUPABASE_URL = 'https://zkgtekqdraiktgybzejb.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_of5g50AOWrJ9NGEVIC2QZQ_UyGg74dx';
 
@@ -8,6 +11,9 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
 let alumnoActual = null;
 let cuotasActuales = [];
 
+// ============================================
+// FUNCIÓN CONSULTAR DNI
+// ============================================
 async function consultar() {
     const dniInput = document.getElementById('dniInput');
     const dni = dniInput ? dniInput.value.trim() : '';
@@ -24,7 +30,7 @@ async function consultar() {
 
     document.getElementById('loading').style.display = 'block';
     document.getElementById('error').style.display = 'none';
-    
+
     ['infoCard', 'resumenCard', 'cuotasCard', 'perfilCard', 'historialCard', 'comprobantesCard', 'academicaCard', 'ayudaCard'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.style.display = 'none';
@@ -60,18 +66,23 @@ async function consultar() {
         document.getElementById('error').style.display = 'block';
     } finally {
         document.getElementById('loading').style.display = 'none';
-        const btn = document.getElementById('btnConsultar');
-        btn.innerHTML = textoOriginal;
-        btn.disabled = false;
+        const btnFinal = document.getElementById('btnConsultar');
+        btnFinal.innerHTML = textoOriginal;
+        btnFinal.disabled = false;
     }
 }
 
+// ============================================
+// MOSTRAR DATOS DEL ALUMNO
+// ============================================
 function mostrarDatos(alumno, cuotas) {
+    // Información básica
     document.getElementById('nombre').textContent = `${alumno.nombre || ''} ${alumno.apellido || ''}`.trim() || 'No especificado';
     document.getElementById('dni').textContent = alumno.dni || 'No especificado';
     document.getElementById('carrera').textContent = alumno.carrera || 'No especificada';
     document.getElementById('curso').textContent = alumno.curso || alumno.Curso || 'No especificado';
 
+    // Resumen
     const total = cuotas.length;
     const pagadas = cuotas.filter(c => c.Pagado === true || c.Pagado === 'true' || c.pagado === true).length;
     const pendientes = total - pagadas;
@@ -82,11 +93,14 @@ function mostrarDatos(alumno, cuotas) {
 
     const estadoEl = document.getElementById('estadoActual');
     if (pendientes === 0 && total > 0) {
-        estadoEl.textContent = 'Al día'; estadoEl.className = 'badge aldia';
+        estadoEl.textContent = 'Al día';
+        estadoEl.className = 'badge aldia';
     } else if (pendientes > 0) {
-        estadoEl.textContent = 'Con deuda'; estadoEl.className = 'badge condeuda';
+        estadoEl.textContent = 'Con deuda';
+        estadoEl.className = 'badge condeuda';
     } else {
-        estadoEl.textContent = 'Sin cuotas'; estadoEl.className = 'badge';
+        estadoEl.textContent = 'Sin cuotas';
+        estadoEl.className = 'badge';
     }
 
     const ultimoPago = cuotas.find(c => c.Pagado === true || c.Pagado === 'true' || c.pagado === true);
@@ -94,7 +108,7 @@ function mostrarDatos(alumno, cuotas) {
         ? new Date(ultimoPago.vencimiento).toLocaleDateString('es-AR')
         : 'Sin registros';
 
-    // PERFIL
+    // Perfil
     const perfilInfo = document.getElementById('perfilInfo');
     if (perfilInfo) {
         perfilInfo.innerHTML = `
@@ -105,7 +119,7 @@ function mostrarDatos(alumno, cuotas) {
         `;
     }
 
-    // HISTORIAL
+    // Historial
     const historialList = document.getElementById('historialList');
     if (historialList) {
         historialList.innerHTML = '';
@@ -129,7 +143,7 @@ function mostrarDatos(alumno, cuotas) {
         }
     }
 
-    // COMPROBANTES
+    // Comprobantes
     const comprobantesList = document.getElementById('comprobantesList');
     if (comprobantesList) {
         comprobantesList.innerHTML = '';
@@ -153,7 +167,7 @@ function mostrarDatos(alumno, cuotas) {
         }
     }
 
-    // CUOTAS LIST
+    // Detalle de cuotas
     const cuotasList = document.getElementById('cuotasList');
     if (cuotasList) {
         cuotasList.innerHTML = '';
@@ -188,6 +202,7 @@ function mostrarDatos(alumno, cuotas) {
         }
     }
 
+    // Mostrar tarjetas principales
     document.getElementById('infoCard').style.display = 'block';
     document.getElementById('resumenCard').style.display = 'block';
     document.getElementById('cuotasCard').style.display = 'block';
@@ -197,6 +212,9 @@ function mostrarDatos(alumno, cuotas) {
     }, 100);
 }
 
+// ============================================
+// DESCARGAR COMPROBANTE
+// ============================================
 function descargarComprobante(dni, concepto, fecha, importe) {
     const contenido = `
 ========================================
@@ -224,10 +242,13 @@ Estado: PAGADO
     URL.revokeObjectURL(url);
 }
 
+// ============================================
+// NAVEGACIÓN ENTRE SECCIONES
+// ============================================
 function volverInicio() {
     document.querySelector('.search-card').style.display = 'block';
     document.querySelector('.accesos-card').style.display = 'block';
-    
+
     ['infoCard', 'resumenCard', 'cuotasCard', 'historialCard', 'comprobantesCard', 'academicaCard', 'ayudaCard', 'perfilCard'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.style.display = 'none';
@@ -237,7 +258,7 @@ function volverInicio() {
 function mostrarSeccion(idSeccion) {
     document.querySelector('.search-card').style.display = 'none';
     document.querySelector('.accesos-card').style.display = 'none';
-    
+
     ['infoCard', 'resumenCard', 'cuotasCard', 'historialCard', 'comprobantesCard', 'academicaCard', 'ayudaCard', 'perfilCard'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.style.display = 'none';
@@ -258,6 +279,9 @@ function irAEstado() {
     }
 }
 
+// ============================================
+// FUNCIONES DE ACCESOS RÁPIDOS
+// ============================================
 function abrirHistorial() {
     if (!alumnoActual) {
         alert('Primero consultá tu DNI.');
@@ -303,6 +327,9 @@ function abrirPerfil() {
     mostrarSeccion('perfilCard');
 }
 
+// ============================================
+// INICIALIZACIÓN
+// ============================================
 document.addEventListener('DOMContentLoaded', () => {
     const btn = document.getElementById('btnConsultar');
     if (btn) {
