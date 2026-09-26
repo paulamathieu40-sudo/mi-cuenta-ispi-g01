@@ -1,14 +1,17 @@
-const SUPABASE_URL = 'https://zkgtekqdraiktgybzejb.supabase.co'; 
+const SUPABASE_URL = 'https://zkgtekqdraiktgybzejb.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_of5g50AOWrJ9NGEVIC2QZQ_UyGg74dx';
 
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: { persistSession: false, autoRefreshToken: false }
 });
 
+let alumnoActual = null;
+let cuotasActuales = [];
+
 async function consultar() {
     const dniInput = document.getElementById('dniInput');
     const dni = dniInput ? dniInput.value.trim() : '';
-    
+
     if (!dni) {
         alert('Por favor, ingresá tu DNI.');
         return;
@@ -21,9 +24,12 @@ async function consultar() {
 
     document.getElementById('loading').style.display = 'block';
     document.getElementById('error').style.display = 'none';
-    document.getElementById('infoCard').style.display = 'none';
-    document.getElementById('resumenCard').style.display = 'none';
-    document.getElementById('cuotasCard').style.display = 'none';
+    
+    // Ocultar todas las tarjetas de resultado al iniciar nueva búsqueda
+    ['infoCard', 'resumenCard', 'cuotasCard', 'perfilCard', 'historialCard', 'comprobantesCard', 'academicaCard', 'ayudaCard'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    });
 
     try {
         const { data: alumno, error: errorAlumno } = await supabaseClient
@@ -44,7 +50,10 @@ async function consultar() {
             .eq('alumno_id', alumno.id)
             .order('vencimiento', { ascending: false });
 
-        mostrarDatos(alumno, cuotas || []);
+        alumnoActual = alumno;
+        cuotasActuales = cuotas || [];
+
+        mostrarDatos(alumno, cuotasActuales);
 
     } catch (err) {
         console.error('Error:', err);
@@ -53,17 +62,19 @@ async function consultar() {
     } finally {
         document.getElementById('loading').style.display = 'none';
         const btn = document.getElementById('btnConsultar');
-        btn.innerHTML = '<span class="material-icons-round">search</span> Consultar';
+        btn.innerHTML = textoOriginal;
         btn.disabled = false;
     }
 }
+
 function mostrarDatos(alumno, cuotas) {
-    // Datos básicos
+    // 1. Información del alumno
     document.getElementById('nombre').textContent = `${alumno.nombre || ''} ${alumno.apellido || ''}`.trim() || 'No especificado';
     document.getElementById('dni').textContent = alumno.dni || 'No especificado';
     document.getElementById('carrera').textContent = alumno.carrera || 'No especificada';
     document.getElementById('curso').textContent = alumno.curso || alumno.Curso || 'No especificado';
 
+    // 2. Resumen de cuenta
     const total = cuotas.length;
     const pagadas = cuotas.filter(c => c.Pagado === true || c.Pagado === 'true' || c.pagado === true).length;
     const pendientes = total - pagadas;
@@ -82,22 +93,22 @@ function mostrarDatos(alumno, cuotas) {
     }
 
     const ultimoPago = cuotas.find(c => c.Pagado === true || c.Pagado === 'true' || c.pagado === true);
-    document.getElementById('ultimoPago').textContent = ultimoPago 
-        ? new Date(ultimoPago.vencimiento).toLocaleDateString('es-AR') 
+    document.getElementById('ultimoPago').textContent = ultimoPago
+        ? new Date(ultimoPago.vencimiento).toLocaleDateString('es-AR')
         : 'Sin registros';
 
-    // === PERFIL ===
+    // 3. Perfil
     const perfilInfo = document.getElementById('perfilInfo');
     if (perfilInfo) {
         perfilInfo.innerHTML = `
-            <div class="comprobante-item"><div><strong>Nombre:</strong> ${alumno.nombre || ''} ${alumno.apellido || ''}</div></div>
-            <div class="comprobante-item"><div><strong>DNI:</strong> ${alumno.dni || 'No especificado'}</div></div>
-            <div class="comprobante-item"><div><strong>Carrera:</strong> ${alumno.carrera || 'No especificada'}</div></div>
-            <div class="comprobante-item"><div><strong>Curso:</strong> ${alumno.curso || alumno.Curso || 'No especificado'}</div></div>
+            <p><strong>Nombre:</strong> ${alumno.nombre || ''} ${alumno.apellido || ''}</p>
+            <p><strong>DNI:</strong> ${alumno.dni || 'No especificado'}</p>
+            <p><strong>Carrera:</strong> ${alumno.carrera || 'No especificada'}</p>
+            <p><strong>Curso:</strong> ${alumno.curso || alumno.Curso || 'No especificado'}</p>
         `;
     }
 
-    // === HISTORIAL DE PAGOS ===
+    // 4. Historial
     const historialList = document.getElementById('historialList');
     if (historialList) {
         historialList.innerHTML = '';
@@ -111,7 +122,7 @@ function mostrarDatos(alumno, cuotas) {
                     try { fecha = new Date(cuota.vencimiento).toLocaleDateString('es-AR'); } catch (e) { fecha = cuota.vencimiento; }
                 }
                 const item = document.createElement('div');
-                item.className = 'historial-item';
+                item.style.cssText = 'background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:12px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;';
                 item.innerHTML = `
                     <div><strong>${cuota.Concepto || cuota.concepto || 'Cuota'}</strong><br><small style="color:#8a94b8;">Vence: ${fecha}</small></div>
                     <div style="color: ${estaPagada ? '#22c55e' : '#ef4444'}; font-weight:bold;">${estaPagada ? '✓ Pagada' : '⏳ Pendiente'}</div>
@@ -121,7 +132,7 @@ function mostrarDatos(alumno, cuotas) {
         }
     }
 
-    // === COMPROBANTES ===
+    // 5. Comprobantes
     const comprobantesList = document.getElementById('comprobantesList');
     if (comprobantesList) {
         comprobantesList.innerHTML = '';
@@ -135,144 +146,188 @@ function mostrarDatos(alumno, cuotas) {
                     try { fecha = new Date(cuota.vencimiento).toLocaleDateString('es-AR'); } catch (e) { fecha = cuota.vencimiento; }
                 }
                 const item = document.createElement('div');
-                item.className = 'comprobante-item';
+                item.style.cssText = 'background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:12px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;';
                 item.innerHTML = `
                     <div><strong>${cuota.Concepto || cuota.concepto || 'Cuota'}</strong><br><small style="color:#8a94b8;">Fecha: ${fecha} - Importe: $${cuota.importe || '0'}</small></div>
-                    <button class="btn-download" onclick="descargarComprobante('${alumno.dni}', '${cuota.Concepto || cuota.concepto}', '${fecha}', '${cuota.importe || '0'}')"> Descargar</button>
+                    <button class="btn-download" onclick="descargarComprobante('${alumno.dni}', '${cuota.Concepto || cuota.concepto}', '${fecha}', '${cuota.importe || '0'}')">📥 Descargar</button>
                 `;
                 comprobantesList.appendChild(item);
             });
         }
     }
 
-    // Mostrar las tarjetas de resultados
-    document.getElementById('infoCard').style.display = 'block';
-    document.getElementById('resumenCard').style.display = 'block';
-    document.getElementById('cuotasCard').style.display = 'block';
-
-    // Scroll suave a los resultados
-    setTimeout(() => {
-        document.getElementById('infoCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
-}
-    const total = cuotas.length;
-    const pagadas = cuotas.filter(c => c.Pagado === true || c.Pagado === 'true' || c.pagado === true).length;
-    const pendientes = total - pagadas;
-
-    document.getElementById('totalCuotas').textContent = total;
-    document.getElementById('pagadas').textContent = pagadas;
-    document.getElementById('pendientes').textContent = pendientes;
-
-    const estadoEl = document.getElementById('estadoActual');
-    if (pendientes === 0 && total > 0) {
-        estadoEl.textContent = 'Al día'; estadoEl.className = 'badge aldia';
-    } else if (pendientes > 0) {
-        estadoEl.textContent = 'Con deuda'; estadoEl.className = 'badge condeuda';
-    } else {
-        estadoEl.textContent = 'Sin cuotas'; estadoEl.className = 'badge';
-    }
-
-    const ultimoPago = cuotas.find(c => c.Pagado === true || c.Pagado === 'true' || c.pagado === true);
-    document.getElementById('ultimoPago').textContent = ultimoPago 
-        ? new Date(ultimoPago.vencimiento).toLocaleDateString('es-AR') 
-        : 'Sin registros';
-
-    document.getElementById('infoCard').style.display = 'block';
-    document.getElementById('resumenCard').style.display = 'block';
-    document.getElementById('cuotasCard').style.display = 'block';
-
+    // 6. Detalle de cuotas
     const cuotasList = document.getElementById('cuotasList');
-    cuotasList.innerHTML = '';
+    if (cuotasList) {
+        cuotasList.innerHTML = '';
+        if (cuotas.length === 0) {
+            cuotasList.innerHTML = '<p style="text-align:center; color:#8a94b8; padding:20px;">No hay cuotas registradas.</p>';
+        } else {
+            cuotas.forEach(cuota => {
+                const item = document.createElement('div');
+                item.className = 'cuota-item';
+                const estaPagada = cuota.Pagado === true || cuota.Pagado === 'true' || cuota.pagado === true;
+                const estadoClase = estaPagada ? 'pagada' : 'pendiente';
+                const icono = estaPagada ? 'check' : 'info';
+                const textoEstado = estaPagada ? 'Pagada' : 'Pendiente';
 
-    if (cuotas.length === 0) {
-        cuotasList.innerHTML = '<p style="text-align:center; color:#8a94b8; padding:20px;">No hay cuotas registradas.</p>';
-    } else {
-        cuotas.forEach(cuota => {
-            const item = document.createElement('div');
-            item.className = 'cuota-item';
-            const estaPagada = cuota.Pagado === true || cuota.Pagado === 'true' || cuota.pagado === true;
-            const estadoClase = estaPagada ? 'pagada' : 'pendiente';
-            const icono = estaPagada ? 'check' : 'info';
-            const textoEstado = estaPagada ? 'Pagada' : 'Pendiente';
-            
-            let fecha = 'Sin fecha';
-            if (cuota.vencimiento) {
-                try { fecha = new Date(cuota.vencimiento).toLocaleDateString('es-AR'); } 
-                catch (e) { fecha = cuota.vencimiento; }
-            }
+                let fecha = 'Sin fecha';
+                if (cuota.vencimiento) {
+                    try { fecha = new Date(cuota.vencimiento).toLocaleDateString('es-AR'); }
+                    catch (e) { fecha = cuota.vencimiento; }
+                }
 
-            item.innerHTML = `
-                <div class="cuota-icon ${estadoClase}"><span class="material-icons-round">${icono}</span></div>
-                <div class="cuota-info">
-                    <div class="mes">${cuota.Concepto || cuota.concepto || 'Cuota'}</div>
-                    <div class="tipo">Importe: $${cuota.importe || '0'}</div>
-                    <div class="tipo" style="font-size:11px; margin-top:2px;">Vence: ${fecha}</div>
-                </div>
-                <div class="cuota-status ${estadoClase}">${textoEstado}</div>
-            `;
-            cuotasList.appendChild(item);
-        });
+                item.innerHTML = `
+                    <div class="cuota-icon ${estadoClase}"><span class="material-icons-round">${icono}</span></div>
+                    <div class="cuota-info">
+                        <div class="mes">${cuota.Concepto || cuota.concepto || 'Cuota'}</div>
+                        <div class="tipo">Importe: $${cuota.importe || '0'}</div>
+                        <div class="tipo" style="font-size:11px; margin-top:2px;">Vence: ${fecha}</div>
+                    </div>
+                    <div class="cuota-status ${estadoClase}">${textoEstado}</div>
+                `;
+                cuotasList.appendChild(item);
+            });
+        }
     }
-    
+
+    // Mostrar tarjetas principales
+    document.getElementById('infoCard').style.display = 'block';
+    document.getElementById('resumenCard').style.display = 'block';
+    document.getElementById('cuotasCard').style.display = 'block';
+
     setTimeout(() => {
         document.getElementById('infoCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
 }
 
-// ACÁ ESTÁ LA CLAVE: Asignamos el evento al botón directamente desde JS
+function descargarComprobante(dni, concepto, fecha, importe) {
+    const contenido = `
+========================================
+       COMPROBANTE DE PAGO - ISPI 4019
+========================================
+
+Alumno DNI: ${dni}
+Concepto:   ${concepto}
+Fecha:      ${fecha}
+Importe:    $${importe}
+
+Estado: PAGADO
+
+========================================
+Este comprobante es generado automáticamente.
+========================================
+    `.trim();
+
+    const blob = new Blob([contenido], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `comprobante_${dni}_${concepto.replace(/\s+/g, '_')}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function volverInicio() {
+    document.querySelector('.search-card').style.display = 'block';
+    document.querySelector('.accesos-card').style.display = 'block';
+    
+    const detalleCards = ['infoCard', 'resumenCard', 'cuotasCard', 'historialCard', 'comprobantesCard', 'academicaCard', 'ayudaCard', 'perfilCard'];
+    detalleCards.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    });
+}
+
+function mostrarSeccion(idSeccion) {
+    document.querySelector('.search-card').style.display = 'none';
+    document.querySelector('.accesos-card').style.display = 'none';
+    
+    const detalleCards = ['infoCard', 'resumenCard', 'cuotasCard', 'historialCard', 'comprobantesCard', 'academicaCard', 'ayudaCard', 'perfilCard'];
+    detalleCards.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    });
+
+    const target = document.getElementById(idSeccion);
+    if (target) {
+        target.style.display = 'block';
+    }
+}
+
+// INICIALIZACIÓN DE EVENTOS
 document.addEventListener('DOMContentLoaded', () => {
+    // Botón consultar
     const btn = document.getElementById('btnConsultar');
     if (btn) {
         btn.addEventListener('click', consultar);
     }
-});
-// Función para volver al inicio
-function volverInicio() {
-    document.querySelectorAll('.card').forEach(card => {
-        if (!card.classList.contains('search-card') && !card.classList.contains('accesos-card')) {
-            card.style.display = 'none';
-        }
-    });
-    document.querySelector('.search-card').style.display = 'block';
-    document.querySelector('.accesos-card').style.display = 'block';
-}
 
-// Función para mostrar una sección específica
-function mostrarSeccion(idSeccion) {
-    document.querySelector('.search-card').style.display = 'none';
-    document.querySelector('.accesos-card').style.display = 'none';
-    document.querySelectorAll('.card').forEach(card => {
-        if (card.id !== idSeccion) card.style.display = 'none';
-    });
-    document.getElementById(idSeccion).style.display = 'block';
-}
-// Conectar botones del menú inferior (bottom-nav)
-document.addEventListener('DOMContentLoaded', () => {
-    const navBtns = document.querySelectorAll('.bottom-nav .nav-item');
-    
-    navBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            // Quitar clase active de todos
-            navBtns.forEach(b => b.classList.remove('active'));
-            // Agregar clase active al clickeado
-            this.classList.add('active');
+    // Botones de accesos rápidos
+    const accesosRapidos = document.querySelectorAll('.quick-btn');
+    accesosRapidos.forEach(btn => {
+        btn.addEventListener('click', function () {
+            const seccion = this.getAttribute('data-seccion');
             
-            const texto = this.textContent.toLowerCase().trim();
+            if (!alumnoActual && seccion !== 'ayuda') {
+                alert('Primero consultá tu DNI.');
+                return;
+            }
             
-            if (texto.includes('estado')) {
-                // Volver al inicio
-                document.querySelectorAll('.card').forEach(card => {
-                    if (!card.classList.contains('search-card') && !card.classList.contains('accesos-card')) {
-                        card.style.display = 'none';
-                    }
-                });
-                document.querySelector('.search-card').style.display = 'block';
-                document.querySelector('.accesos-card').style.display = 'block';
-            } 
-            else if (texto.includes('historial')) {
+            if (seccion === 'historial') {
                 mostrarSeccion('historialCard');
-            } 
-            else if (texto.includes('perfil')) {
+            } else if (seccion === 'comprobantes') {
+                mostrarSeccion('comprobantesCard');
+            } else if (seccion === 'academica') {
+                mostrarSeccion('academicaCard');
+                const academicaInfo = document.getElementById('academicaInfo');
+                if (academicaInfo && alumnoActual) {
+                    academicaInfo.innerHTML = `
+                        <p><strong>Nombre:</strong> ${alumnoActual.nombre || ''} ${alumnoActual.apellido || ''}</p>
+                        <p><strong>DNI:</strong> ${alumnoActual.dni || 'No especificado'}</p>
+                        <p><strong>Carrera:</strong> ${alumnoActual.carrera || 'No especificada'}</p>
+                        <p><strong>Curso:</strong> ${alumnoActual.curso || alumnoActual.Curso || 'No especificado'}</p>
+                    `;
+                }
+            } else if (seccion === 'ayuda') {
+                mostrarSeccion('ayudaCard');
+            }
+        });
+    });
+
+    // Botones del menú inferior (bottom-nav)
+    const navBtns = document.querySelectorAll('.bottom-nav .nav-item');
+    navBtns.forEach(btn => {
+        btn.addEventListener('click', function () {
+            navBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+
+            const texto = this.textContent.toLowerCase().trim();
+
+            if (texto.includes('inicio')) {
+                volverInicio();
+            } else if (texto.includes('estado')) {
+                volverInicio();
+                if (alumnoActual) {
+                    setTimeout(() => {
+                        document.getElementById('infoCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 200);
+                }
+            } else if (texto.includes('historial')) {
+                if (!alumnoActual) {
+                    alert('Primero consultá tu DNI.');
+                    volverInicio();
+                    return;
+                }
+                mostrarSeccion('historialCard');
+            } else if (texto.includes('perfil')) {
+                if (!alumnoActual) {
+                    alert('Primero consultá tu DNI.');
+                    volverInicio();
+                    return;
+                }
                 mostrarSeccion('perfilCard');
             }
         });
