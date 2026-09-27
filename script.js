@@ -1,6 +1,3 @@
-// ============================================
-// CONFIGURACIÓN SUPABASE
-// ============================================
 const SUPABASE_URL = 'https://zkgtekqdraiktgybzejb.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_of5g50AOWrJ9NGEVIC2QZQ_UyGg74dx';
 
@@ -11,9 +8,6 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
 let alumnoActual = null;
 let cuotasActuales = [];
 
-// ============================================
-// FUNCIÓN CONSULTAR DNI
-// ============================================
 async function consultar() {
     const dniInput = document.getElementById('dniInput');
     const dni = dniInput ? dniInput.value.trim() : '';
@@ -72,17 +66,12 @@ async function consultar() {
     }
 }
 
-// ============================================
-// MOSTRAR DATOS DEL ALUMNO
-// ============================================
 function mostrarDatos(alumno, cuotas) {
-    // Información básica
     document.getElementById('nombre').textContent = `${alumno.nombre || ''} ${alumno.apellido || ''}`.trim() || 'No especificado';
     document.getElementById('dni').textContent = alumno.dni || 'No especificado';
     document.getElementById('carrera').textContent = alumno.carrera || 'No especificada';
     document.getElementById('curso').textContent = alumno.curso || alumno.Curso || 'No especificado';
 
-    // Resumen
     const total = cuotas.length;
     const pagadas = cuotas.filter(c => c.Pagado === true || c.Pagado === 'true' || c.pagado === true).length;
     const pendientes = total - pagadas;
@@ -108,7 +97,6 @@ function mostrarDatos(alumno, cuotas) {
         ? new Date(ultimoPago.vencimiento).toLocaleDateString('es-AR')
         : 'Sin registros';
 
-    // Perfil
     const perfilInfo = document.getElementById('perfilInfo');
     if (perfilInfo) {
         perfilInfo.innerHTML = `
@@ -119,7 +107,6 @@ function mostrarDatos(alumno, cuotas) {
         `;
     }
 
-    // Historial
     const historialList = document.getElementById('historialList');
     if (historialList) {
         historialList.innerHTML = '';
@@ -143,7 +130,6 @@ function mostrarDatos(alumno, cuotas) {
         }
     }
 
-    // Comprobantes
     const comprobantesList = document.getElementById('comprobantesList');
     if (comprobantesList) {
         comprobantesList.innerHTML = '';
@@ -167,7 +153,6 @@ function mostrarDatos(alumno, cuotas) {
         }
     }
 
-    // Detalle de cuotas
     const cuotasList = document.getElementById('cuotasList');
     if (cuotasList) {
         cuotasList.innerHTML = '';
@@ -202,7 +187,6 @@ function mostrarDatos(alumno, cuotas) {
         }
     }
 
-    // Mostrar tarjetas principales
     document.getElementById('infoCard').style.display = 'block';
     document.getElementById('resumenCard').style.display = 'block';
     document.getElementById('cuotasCard').style.display = 'block';
@@ -212,9 +196,6 @@ function mostrarDatos(alumno, cuotas) {
     }, 100);
 }
 
-// ============================================
-// DESCARGAR COMPROBANTE
-// ============================================
 function descargarComprobante(dni, concepto, fecha, importe) {
     const contenido = `
 ========================================
@@ -242,9 +223,6 @@ Estado: PAGADO
     URL.revokeObjectURL(url);
 }
 
-// ============================================
-// NAVEGACIÓN ENTRE SECCIONES
-// ============================================
 function volverInicio() {
     document.querySelector('.search-card').style.display = 'block';
     document.querySelector('.accesos-card').style.display = 'block';
@@ -279,9 +257,6 @@ function irAEstado() {
     }
 }
 
-// ============================================
-// FUNCIONES DE ACCESOS RÁPIDOS
-// ============================================
 function abrirHistorial() {
     if (!alumnoActual) {
         alert('Primero consultá tu DNI.');
@@ -327,9 +302,6 @@ function abrirPerfil() {
     mostrarSeccion('perfilCard');
 }
 
-// ============================================
-// INICIALIZACIÓN
-// ============================================
 document.addEventListener('DOMContentLoaded', () => {
     const btn = document.getElementById('btnConsultar');
     if (btn) {
