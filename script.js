@@ -272,12 +272,54 @@ function abrirComprobantes() {
     }
     mostrarSeccion('comprobantesCard');
 }
-
 function abrirInfoAcademica() {
-    if (!alumnoActual) {
-        alert('Primero consultá tu DNI.');
-        return;
-    }
+  if (!alumnoActual) {
+    alert('Primero consultá tu DNI.');
+    return;
+  }
+
+  const content = document.getElementById('infoAcademicaContent');
+  content.innerHTML = `
+    <div class="info-grid">
+      <div class="info-item">
+        <span class="info-label">Alumno:</span>
+        <span class="info-value">${alumnoActual.nombre || 'No disponible'}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">DNI:</span>
+        <span class="info-value">${alumnoActual.dni || 'No disponible'}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Carrera:</span>
+        <span class="info-value">${alumnoActual.carrera || 'No disponible'}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Año:</span>
+        <span class="info-value">${alumnoActual.anio || 'No disponible'}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">División:</span>
+        <span class="info-value">${alumnoActual.division || 'No disponible'}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Estado:</span>
+        <span class="info-value">${alumnoActual.estado || 'Activo'}</span>
+      </div>
+    </div>
+  `;
+
+  mostrarSeccion('infoAcademicaCard');
+}
+
+function volverAlInicio() {
+  document.querySelectorAll('.card').forEach(card => {
+    card.style.display = 'none';
+  });
+  const seccionPrincipal = document.querySelector('.main-section') || document.getElementById('consultaDNI');
+  if (seccionPrincipal) {
+    seccionPrincipal.style.display = 'block';
+  }
+}
     const academicaInfo = document.getElementById('academicaInfo');
     if (academicaInfo) {
         academicaInfo.innerHTML = `
