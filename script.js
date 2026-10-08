@@ -27,10 +27,9 @@ async function consultar() {
     }
 
     loading.style.display = 'block';
-
     try {
-        // ⚠️ CAMBIÁ 'alumnos' POR EL NOMBRE REAL DE TU TABLA
-        const { data, error } = await supabase
+        // ⚠️ FIJATE QUE DIGA supabaseClient (con "Client" al final)
+        const { data, error } = await supabaseClient
             .from('alumnos')
             .select('*')
             .eq('dni', dni)
@@ -42,19 +41,17 @@ async function consultar() {
 
         alumnoActual = data;
 
-        // Mostrar datos del alumno
         document.getElementById('nombre').textContent = data.nombre || 'No disponible';
         document.getElementById('dni').textContent = data.dni || 'No disponible';
         document.getElementById('carrera').textContent = data.carrera || 'No disponible';
         document.getElementById('curso').textContent = data.curso || data.anio || 'No disponible';
 
-        // Mostrar tarjetas
         document.getElementById('infoCard').style.display = 'block';
         document.getElementById('resumenCard').style.display = 'block';
         document.getElementById('cuotasCard').style.display = 'block';
 
     } catch (err) {
-        console.error('Error:', err);
+        console.error('Error al consultar:', err);
         errorDiv.textContent = err.message || 'Error al buscar. Intentá de nuevo.';
         errorDiv.style.display = 'block';
         alumnoActual = null;
