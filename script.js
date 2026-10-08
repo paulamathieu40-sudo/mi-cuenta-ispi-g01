@@ -232,7 +232,48 @@ function volverInicio() {
         if (el) el.style.display = 'none';
     });
 }
+function volverInicio() {
+  document.querySelector('.search-card').style.display = 'block';
+  document.querySelector('.accesos-card').style.display = 'block';
 
+  ['infoCard', 'resumenCard', 'cuotasCard', 'historialCard', 'comprobantesCard', 'infoAcademicaCard', 'ayudaCard', 'perfilCard'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+}  // ← FIN DE volverInicio()
+
+// 👇 PEGÁ ACÁ LA FUNCIÓN NUEVA 👇
+
+function abrirInfoAcademica() {
+  if (!alumnoActual) {
+    alert('Primero consultá tu DNI.');
+    return;
+  }
+
+  const content = document.getElementById('infoAcademicaContent');
+  content.innerHTML = `
+    <div class="info-grid">
+      <div class="info-item">
+        <span class="info-label">Alumno:</span>
+        <span class="info-value">${alumnoActual.nombre || 'No disponible'}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">DNI:</span>
+        <span class="info-value">${alumnoActual.dni || 'No disponible'}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Carrera:</span>
+        <span class="info-value">${alumnoActual.carrera || 'No disponible'}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Curso:</span>
+        <span class="info-value">${alumnoActual.curso || 'No disponible'}</span>
+      </div>
+    </div>
+  `;
+
+  mostrarSeccion('infoAcademicaCard');
+}
 function mostrarSeccion(idSeccion) {
     document.querySelector('.search-card').style.display = 'none';
     document.querySelector('.accesos-card').style.display = 'none';
@@ -320,18 +361,7 @@ function volverAlInicio() {
     seccionPrincipal.style.display = 'block';
   }
 }
-    const academicaInfo = document.getElementById('academicaInfo');
-    if (academicaInfo) {
-        academicaInfo.innerHTML = `
-            <p><strong>Nombre:</strong> ${alumnoActual.nombre || ''} ${alumnoActual.apellido || ''}</p>
-            <p><strong>DNI:</strong> ${alumnoActual.dni || 'No especificado'}</p>
-            <p><strong>Carrera:</strong> ${alumnoActual.carrera || 'No especificada'}</p>
-            <p><strong>Curso:</strong> ${alumnoActual.curso || alumnoActual.Curso || 'No especificado'}</p>
-        `;
-    }
-    mostrarSeccion('academicaCard');
-}
-
+   
 function abrirAyuda() {
     mostrarSeccion('ayudaCard');
 }
