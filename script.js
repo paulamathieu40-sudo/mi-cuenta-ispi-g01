@@ -301,7 +301,32 @@ function abrirPerfil() {
     }
     mostrarSeccion('perfilCard');
 }
+// === FUNCIONES DE LOS NUEVOS BOTONES ===
 
+function abrirInfoAcademica() {
+  if (!alumnoActual) {
+    alert('Primero consultá tu DNI.');
+    return;
+  }
+  // Cambiá esto por lo que necesites
+  alert('Mostrando información académica de: ' + alumnoActual.nombre);
+  // O redirigir: window.location.href = '/info-academica';
+}
+
+function abrirAyudaContacto() {
+  // Cambiá esto por lo que necesites
+  alert('Sección: Ayuda y contacto');
+  // O abrir WhatsApp: window.open('https://wa.me/5491112345678', '_blank');
+}
+
+function descargarComprobantes() {
+  if (!alumnoActual) {
+    alert('Primero consultá tu DNI.');
+    return;
+  }
+  alert('Descargando comprobantes de: ' + alumnoActual.nombre);
+  // O descargar archivo: window.location.href = '/api/descargar-comprobantes';
+}
 document.addEventListener('DOMContentLoaded', () => {
     const btn = document.getElementById('btnConsultar');
     if (btn) {

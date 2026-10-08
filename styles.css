@@ -549,3 +549,38 @@ body {
     gap: 15px;
     padding: 10px 0;
 }
+/* Estilos para los botones de accesos rápidos */
+.quick-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.quick-btn {
+  background-color: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: white;
+  font-size: 0.95rem;
+  min-height: 120px;
+}
+
+.quick-btn:hover {
+  background-color: #334155;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.quick-btn .material-icons-round {
+  font-size: 2rem;
+  color: #3b82f6;
+}

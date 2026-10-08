@@ -209,6 +209,43 @@
                     <span class="material-icons-round">headset_mic</span>
                     <span>Ayuda y contacto</span>
                 </button>
+                <!-- ACCESOS RÁPIDOS -->
+<section class="card accesos-card">
+  <h3>Accesos rápidos</h3>
+  <div class="quick-grid">
+    
+    <!-- Botones existentes (NO tocar) -->
+    <button class="quick-btn" onclick="abrirHistorial()">
+      <span class="material-icons-round">history</span>
+      <span>Historial de pagos</span>
+    </button>
+    
+    <button class="quick-btn" onclick="abrirComprobantes()">
+      <span class="material-icons-round">download</span>
+      <span>Descargar comprobantes</span>
+    </button>
+
+    <!-- 👇 AGREGÁ ESTOS 3 BOTONES NUEVOS 👇 -->
+    
+    <button class="quick-btn" onclick="abrirInfoAcademica()">
+      <span class="material-icons-round">info</span>
+      <span>Información académica</span>
+    </button>
+
+    <button class="quick-btn" onclick="abrirAyudaContacto()">
+      <span class="material-icons-round">headset</span>
+      <span>Ayuda y contacto</span>
+    </button>
+
+    <button class="quick-btn" onclick="descargarComprobantes()">
+      <span class="material-icons-round">download</span>
+      <span>Descargar comprobantes</span>
+    </button>
+
+    <!-- 👆 FIN DE BOTONES NUEVOS 👆 -->
+
+  </div>  <!-- ← Este es el cierre del quick-grid, NO borrarlo -->
+</section>
             </div>
         </section>
 
