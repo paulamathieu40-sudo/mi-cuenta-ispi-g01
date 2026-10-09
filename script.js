@@ -336,47 +336,51 @@ function abrirPerfil() {
     
     mostrarSeccion('perfilCard');
     
-    const container = document.getElementById('perfilContent') || document.getElementById('perfilCard');
+    // Buscamos el contenedor, si no existe lo creamos
+    let container = document.getElementById('perfilContent');
+    if (!container) {
+        container = document.getElementById('perfilCard');
+    }
+    
+    if (!container) {
+        console.error('❌ No se encontró el contenedor de perfil');
+        alert('Error: No se encontró la sección de perfil. Revisá el HTML.');
+        return;
+    }
     
     container.innerHTML = `
         <div style="padding: 20px;">
-            <h3 style="margin-bottom: 20px; color: #f8fafc;">Mi Perfil</h3>
+            <h3 style="margin-bottom: 20px; color: #f8fafc; text-align: center;">Mi Perfil</h3>
             
-            <div style="background: rgba(59, 130, 246, 0.1); padding: 20px; border-radius: 12px; border-left: 4px solid #3b82f6; margin-bottom: 15px;">
-                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
-                    <div style="width: 60px; height: 60px; background: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: white; font-weight: bold;">
-                        ${alumnoActual.nombre ? alumnoActual.nombre.charAt(0).toUpperCase() : '?'}
-                    </div>
-                    <div>
-                        <h4 style="color: #f8fafc; margin: 0; font-size: 1.3em;">${alumnoActual.nombre || 'No disponible'}</h4>
-                        <p style="color: #94a3b8; margin: 5px 0 0 0;">Alumno</p>
-                    </div>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="width: 80px; height: 80px; background: #3b82f6; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 32px; color: white; font-weight: bold;">
+                    ${alumnoActual.nombre ? alumnoActual.nombre.charAt(0).toUpperCase() : '?'}
                 </div>
             </div>
             
+            <h4 style="color: #f8fafc; text-align: center; margin-bottom: 5px;">${alumnoActual.nombre || 'No disponible'}</h4>
+            <p style="color: #94a3b8; text-align: center; margin-bottom: 20px;">Alumno</p>
+            
             <div style="display: grid; gap: 12px;">
-                <div style="background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
-                    <span style="color: #94a3b8;">📄 DNI:</span>
-                    <span style="color: #f8fafc; font-weight: bold;">${alumnoActual.dni || 'No disponible'}</span>
+                <div style="background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 8px;">
+                    <span style="color: #94a3b8; display: block; font-size: 0.9em;">📄 DNI</span>
+                    <span style="color: #f8fafc; font-weight: bold; font-size: 1.1em;">${alumnoActual.dni || 'No disponible'}</span>
                 </div>
                 
-                <div style="background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
-                    <span style="color: #94a3b8;">🎓 Carrera:</span>
-                    <span style="color: #f8fafc; font-weight: bold;">${alumnoActual.carrera || 'No disponible'}</span>
+                <div style="background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 8px;">
+                    <span style="color: #94a3b8; display: block; font-size: 0.9em;">🎓 Carrera</span>
+                    <span style="color: #f8fafc; font-weight: bold; font-size: 1.1em;">${alumnoActual.carrera || 'No disponible'}</span>
                 </div>
                 
-                <div style="background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
-                    <span style="color: #94a3b8;">📚 Curso/Año:</span>
-                    <span style="color: #f8fafc; font-weight: bold;">${alumnoActual.curso || alumnoActual.anio || 'No disponible'}</span>
-                </div>
-                
-                <div style="background: rgba(74, 222, 128, 0.1); padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #4ade80;">
-                    <span style="color: #4ade80;">✓ Estado:</span>
-                    <span style="color: #4ade80; font-weight: bold;">${document.getElementById('estadoActual')?.textContent || 'Al día'}</span>
+                <div style="background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 8px;">
+                    <span style="color: #94a3b8; display: block; font-size: 0.9em;"> Curso/Año</span>
+                    <span style="color: #f8fafc; font-weight: bold; font-size: 1.1em;">${alumnoActual.curso || alumnoActual.anio || 'No disponible'}</span>
                 </div>
             </div>
         </div>
     `;
+    
+    console.log('✅ Perfil cargado correctamente');
 }
 // ==========================================
 // FUNCIÓN GLOBAL DE DESCARGA
