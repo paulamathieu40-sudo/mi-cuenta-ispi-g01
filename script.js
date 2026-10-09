@@ -45,7 +45,69 @@ async function consultar() {
         document.getElementById('dni').textContent = data.dni || 'No disponible';
         document.getElementById('carrera').textContent = data.carrera || 'No disponible';
         document.getElementById('curso').textContent = data.curso || data.anio || 'No disponible';
+        // === CALCULAR Y MOSTRAR CIFRAS DE CUOTAS ===
+        
+        // Buscar las cuotas del alumno
+        const { data: cuotasData } = await supabaseClient
+            .from('cuotas')
+            .select('*')
+            .eq('alumno_id', alumnoData.id)
+            .order('vencimiento', { ascending: true });
 
+        const totalCuotas = cuotasData ? cuotasData.length : 0;
+        const cuotasPagadas = cuotasData ? cuotasData.filter(c => c.pagado === true).length : 0;
+        const cuotasPendientes = totalCuotas - cuotasPagadas;
+
+        // Estado actual y último pago
+        let estadoActual = 'Al día';
+        let ultimoPago = 'Sin pagos';
+
+        if (cuotasData && cuotasData.length > 0) {
+            const ultimoPagoData = cuotasData
+                .filter(c => c.pagado === true)
+                .sort((a, b) => new Date(b.vencimiento) - new Date(a.vencimiento))[0];
+
+            if (ultimoPagoData) {
+                ultimoPago = new Date(ultimoPagoData.vencimiento).toLocaleDateString('es-AR');
+            }
+
+            const hoy = new Date();
+            const hayMora = cuotasData.some(c => 
+                c.pagado === false && new Date(c.vencimiento) < hoy
+            );
+
+            if (hayMora) estadoActual = 'Con mora';
+        }
+
+        // Mostrar las cifras en el HTML
+        document.getElementById('totalCuotas').textContent = totalCuotas;
+        document.getElementById('pagadas').textContent = cuotasPagadas;
+        document.getElementById('pendientes').textContent = cuotasPendientes;
+        document.getElementById('estadoActual').textContent = estadoActual;
+        document.getElementById('ultimoPago').textContent = ultimoPago;
+
+        // Mostrar detalle de cuotas
+        const cuotasList = document.getElementById('cuotasList');
+        if (cuotasData && cuotasData.length > 0) {
+            cuotasList.innerHTML = cuotasData.map(cuota => `
+                <div class="cuota-item ${cuota.pagado ? 'pagada' : 'pendiente'}">
+                    <div class="cuota-info">
+                        <span class="cuota-concepto">${cuota.concepto || 'Cuota'}</span>
+                        <span class="cuota-vencimiento">Vence: ${new Date(cuota.vencimiento).toLocaleDateString('es-AR')}</span>
+                    </div>
+                    <div class="cuota-monto">
+                        <span class="cuota-importe">$${cuota.importe || 0}</span>
+                        <span class="cuota-estado ${cuota.pagado ? 'pagado' : 'pendiente'}">
+                            ${cuota.pagado ? '✓ Pagada' : '⏳ Pendiente'}
+                        </span>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            cuotasList.innerHTML = '<p style="text-align:center; color:#94a3b8; padding:20px;">No hay cuotas registradas</p>';
+        }
+
+        // === FIN DE CIFRAS DE CUOTAS ===
         document.getElementById('infoCard').style.display = 'block';
         document.getElementById('resumenCard').style.display = 'block';
         document.getElementById('cuotasCard').style.display = 'block';
