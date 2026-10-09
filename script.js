@@ -155,8 +155,56 @@ function irAEstado() {
 // FUNCIONES DE LOS BOTONES
 // ==========================================
 function abrirHistorial() {
-    if (!alumnoActual) { alert('Primero consultá tu DNI.'); return; }
+    if (!alumnoActual) { 
+        alert('Primero consultá tu DNI.'); 
+        return; 
+    }
+    
     mostrarSeccion('historialCard');
+    
+    const container = document.getElementById('historialContent') || document.getElementById('historialCard');
+    container.innerHTML = '<p style="text-align:center; padding:20px; color:#cbd5e1;">Cargando historial...</p>';
+    
+    // Cargar el historial de pagos desde Supabase
+    supabaseClient
+        .from('cuotas')
+        .select('*')
+        .eq('alumno_id', alumnoActual.id)
+        .eq('pagado', true)
+        .order('vencimiento', { ascending: false })
+        .then(({ data, error }) => {
+            if (error) throw error;
+            
+            if (!data || data.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#94a3b8; padding:20px;">No hay pagos registrados aún.</p>';
+                return;
+            }
+            
+            let html = '<div style="padding: 20px;">';
+            html += '<h3 style="margin-bottom: 15px; color: #f8fafc;">Historial de Pagos</h3>';
+            html += '<div style="display: flex; flex-direction: column; gap: 10px;">';
+            
+            data.forEach(cuota => {
+                html += `
+                    <div style="background: rgba(74, 222, 128, 0.1); padding: 15px; border-radius: 8px; border-left: 4px solid #4ade80;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <span style="font-weight: bold; color: #4ade80; display: block;">✓ ${cuota.concepto || 'Cuota'}</span>
+                                <span style="font-size: 0.9em; color: #cbd5e1;">Pagado el: ${new Date(cuota.vencimiento).toLocaleDateString('es-AR')}</span>
+                            </div>
+                            <span style="color: #4ade80; font-weight: bold;">$${cuota.importe || 0}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div></div>';
+            container.innerHTML = html;
+        })
+        .catch(err => {
+            console.error('Error al cargar historial:', err);
+            container.innerHTML = '<p style="text-align:center; color:#ef4444; padding:20px;">Error al cargar el historial.</p>';
+        });
 }
 async function abrirComprobantes() {
     if (!alumnoActual) { 
