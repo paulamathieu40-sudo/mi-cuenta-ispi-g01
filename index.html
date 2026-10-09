@@ -219,21 +219,24 @@
         </section>
 
         <!-- SECCIÓN PERFIL -->
-        function abrirPerfil() {
+       function abrirPerfil() {
+    alert('🔵 La función abrirPerfil se ejecutó');
+    
     if (!alumnoActual) {
-        alert('Primero consultá tu DNI.');
+        alert('❌ No hay alumnoActual');
         return;
     }
     
-    mostrarSeccion('perfilCard');
+    alert('✅ Hay alumnoActual: ' + alumnoActual.nombre);
     
-    // ✅ ID CORRECTO: perfilInfo
     const container = document.getElementById('perfilInfo');
     
     if (!container) {
-        console.error('❌ No se encontró el contenedor perfilInfo');
+        alert('❌ No existe el elemento con id="perfilInfo"');
         return;
     }
+    
+    alert('✅ Encontré el contenedor perfilInfo');
     
     container.innerHTML = `
         <div style="padding: 20px;">
@@ -248,29 +251,24 @@
             
             <div style="display: grid; gap: 12px;">
                 <div style="background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 8px;">
-                    <span style="color: #94a3b8; display: block; font-size: 0.9em;"> DNI</span>
+                    <span style="color: #94a3b8; display: block; font-size: 0.9em;">DNI</span>
                     <span style="color: #f8fafc; font-weight: bold; font-size: 1.1em;">${alumnoActual.dni || 'No disponible'}</span>
                 </div>
                 
                 <div style="background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 8px;">
-                    <span style="color: #94a3b8; display: block; font-size: 0.9em;">🎓 Carrera</span>
+                    <span style="color: #94a3b8; display: block; font-size: 0.9em;">Carrera</span>
                     <span style="color: #f8fafc; font-weight: bold; font-size: 1.1em;">${alumnoActual.carrera || 'No disponible'}</span>
                 </div>
                 
                 <div style="background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 8px;">
-                    <span style="color: #94a3b8; display: block; font-size: 0.9em;">📚 Curso/Año</span>
+                    <span style="color: #94a3b8; display: block; font-size: 0.9em;">Curso/Año</span>
                     <span style="color: #f8fafc; font-weight: bold; font-size: 1.1em;">${alumnoActual.curso || alumnoActual.anio || 'No disponible'}</span>
-                </div>
-                
-                <div style="background: rgba(74, 222, 128, 0.1); padding: 15px; border-radius: 8px; border-left: 4px solid #4ade80;">
-                    <span style="color: #4ade80; display: block; font-size: 0.9em;">✓ Estado de cuenta</span>
-                    <span style="color: #4ade80; font-weight: bold; font-size: 1.1em;">${document.getElementById('estadoActual')?.textContent || 'Al día'}</span>
                 </div>
             </div>
         </div>
     `;
     
-    console.log('✅ Perfil cargado correctamente');
+    alert('✅ Perfil renderizado correctamente');
 }
         <!-- === ACCESOS RÁPIDOS (EXACTAMENTE 4 BOTONES) === -->
         <section class="card accesos-card">
