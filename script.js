@@ -158,7 +158,6 @@ function abrirHistorial() {
     if (!alumnoActual) { alert('Primero consultá tu DNI.'); return; }
     mostrarSeccion('historialCard');
 }
-
 async function abrirComprobantes() {
     if (!alumnoActual) { 
         alert('Primero consultá tu DNI.'); 
@@ -188,7 +187,7 @@ async function abrirComprobantes() {
         html += '<h3 style="margin-bottom: 15px; color: #f8fafc;">Tus Comprobantes de Pago</h3>';
         html += '<div style="display: flex; flex-direction: column; gap: 10px;">';
         
-        cuotasPagadas.forEach(cuota => {
+        cuotasPagadas.forEach((cuota, index) => {
             html += `
                 <div class="cuota-item pagada" style="display: flex; justify-content: space-between; align-items: center; background: rgba(74, 222, 128, 0.1); padding: 15px; border-radius: 8px; border-left: 4px solid #4ade80;">
                     <div class="cuota-info">
@@ -196,10 +195,8 @@ async function abrirComprobantes() {
                         <span style="font-size: 0.9em; color: #cbd5e1;">Monto: $${cuota.importe || 0} | Vencimiento: ${new Date(cuota.vencimiento).toLocaleDateString('es-AR')}</span>
                     </div>
                     <button 
-                        onclick="window.generarYDescargarComprobante('${cuota.concepto || 'Cuota'}', '${cuota.importe || 0}', '${cuota.vencimiento}')"
-                        style="background: #3b82f6; color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: background 0.2s;"
-                        onmouseover="this.style.background='#2563eb'" 
-                        onmouseout="this.style.background='#3b82f6'">
+                        id="btn-descarga-${index}"
+                        style="background: #3b82f6; color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;">
                         ⬇ Descargar
                     </button>
                 </div>
@@ -208,6 +205,57 @@ async function abrirComprobantes() {
         
         html += '</div></div>';
         container.innerHTML = html;
+        
+        // Ahora agregamos los eventos DESPUÉS de crear el HTML
+        cuotasPagadas.forEach((cuota, index) => {
+            const btn = document.getElementById(`btn-descarga-${index}`);
+            if (btn) {
+                btn.addEventListener('click', function() {
+                    console.log('📥 Click en descargar:', cuota);
+                    
+                    if (!alumnoActual) {
+                        alert('Error: No hay alumno seleccionado.');
+                        return;
+                    }
+
+                    const fechaEmision = new Date().toLocaleDateString('es-AR');
+                    const fechaVenc = new Date(cuota.vencimiento).toLocaleDateString('es-AR');
+                    
+                    const texto = `
+========================================
+       COMPROBANTE DE PAGO
+========================================
+Fecha de emisión: ${fechaEmision}
+
+DATOS DEL ALUMNO:
+Nombre: ${alumnoActual.nombre}
+DNI: ${alumnoActual.dni}
+Carrera: ${alumnoActual.carrera}
+
+DETALLE DEL PAGO:
+Concepto: ${cuota.concepto || 'Cuota'}
+Importe: $${cuota.importe || 0}
+Vencimiento: ${fechaVenc}
+Estado: PAGADO
+========================================
+                    `.trim();
+
+                    const blob = new Blob([texto], { type: 'text/plain;charset=utf-8' });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `Comprobante_${alumnoActual.dni}_${cuota.concepto || 'Cuota'}.txt`;
+                    document.body.appendChild(a);
+                    a.click();
+                    setTimeout(() => {
+                        document.body.removeChild(a);
+                        window.URL.revokeObjectURL(url);
+                    }, 100);
+                    
+                    console.log('✅ Descarga iniciada');
+                });
+            }
+        });
         
     } catch (err) {
         console.error('Error al cargar comprobantes:', err);
