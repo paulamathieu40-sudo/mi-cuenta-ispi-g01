@@ -291,36 +291,32 @@ function abrirPerfil() {
     }
     mostrarSeccion('perfilCard');
 }
-
 // ==========================================
-// FUNCIÓN DE DESCARGA (¡ESTA ES LA QUE TE FALTABA!)
+// FUNCIÓN GLOBAL DE DESCARGA
 // ==========================================
 window.generarYDescargarComprobante = function(concepto, importe, vencimiento) {
-    console.log(' [DESCARGA] Función llamada con:', { concepto, importe, vencimiento });
-    console.log('🔵 [ALUMNO] alumnoActual:', alumnoActual);
+    console.log(' [DEBUG] Función llamada con:', { concepto, importe, vencimiento });
+    console.log(' [DEBUG] Alumno actual:', alumnoActual);
     
-    // Verificación de seguridad
     if (!alumnoActual) {
-        console.error('❌ [ERROR] No hay alumno seleccionado');
-        alert('Error: No hay alumno seleccionado. Volvé a consultar tu DNI.');
+        alert('Error: No hay alumno seleccionado.');
         return;
     }
 
     try {
         const fechaEmision = new Date().toLocaleDateString('es-AR');
-        const horaEmision = new Date().toLocaleTimeString('es-AR');
         const fechaVenc = new Date(vencimiento).toLocaleDateString('es-AR');
         
-        const textoComprobante = `
+        const texto = `
 ========================================
        COMPROBANTE DE PAGO
 ========================================
-Fecha de emisión: ${fechaEmision} ${horaEmision}
+Fecha de emisión: ${fechaEmision}
 
 DATOS DEL ALUMNO:
-Nombre: ${alumnoActual.nombre || 'N/A'}
-DNI: ${alumnoActual.dni || 'N/A'}
-Carrera: ${alumnoActual.carrera || 'N/A'}
+Nombre: ${alumnoActual.nombre}
+DNI: ${alumnoActual.dni}
+Carrera: ${alumnoActual.carrera}
 
 DETALLE DEL PAGO:
 Concepto: ${concepto}
@@ -328,38 +324,26 @@ Importe: $${importe}
 Vencimiento: ${fechaVenc}
 Estado: PAGADO
 ========================================
-`;
+        `.trim();
 
-        console.log(' [BLOB] Creando archivo...');
-        const blob = new Blob([textoComprobante], { type: 'text/plain;charset=utf-8' });
+        const blob = new Blob([texto], { type: 'text/plain;charset=utf-8' });
         const url = window.URL.createObjectURL(blob);
-        
-        console.log('🟢 [LINK] Creando elemento de descarga...');
         const a = document.createElement('a');
         const nombreArchivo = `Comprobante_${alumnoActual.dni}_${Date.now()}.txt`;
         
         a.href = url;
         a.download = nombreArchivo;
-        a.style.display = 'none';
-        
-        console.log('🟢 [DOWNLOAD] Nombre del archivo:', nombreArchivo);
-        console.log('🟢 [DOWNLOAD] Iniciando click programático...');
-        
         document.body.appendChild(a);
         a.click();
         
-        console.log('✅ [ÉXITO] Descarga iniciada');
-        
-        // Limpieza
         setTimeout(() => {
             document.body.removeChild(a);
             window.URL.revokeObjectURL(url);
-            console.log('🟡 [LIMPIEZA] Elementos removidos');
         }, 100);
         
+        console.log('✅ [DEBUG] Descarga iniciada:', nombreArchivo);
     } catch (err) {
-        console.error('❌ [ERROR FATAL] En generarYDescargarComprobante:', err);
-        console.error('❌ [STACK]', err.stack);
+        console.error('❌ [DEBUG] Error:', err);
         alert('Error al descargar: ' + err.message);
     }
 };
