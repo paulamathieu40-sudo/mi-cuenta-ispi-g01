@@ -51,7 +51,7 @@ async function consultar() {
         const { data: cuotasData } = await supabaseClient
             .from('cuotas')
             .select('*')
-            .eq('alumno_id', alumnoData.id)
+        .eq('alumno_id', alumnoActual.id)
             .order('vencimiento', { ascending: true });
 
         const totalCuotas = cuotasData ? cuotasData.length : 0;
