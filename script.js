@@ -109,21 +109,111 @@ function volverInicio() {
 function abrirHistorial() {
     if (!alumnoActual) { alert('Primero consultá tu DNI.'); return; }
     mostrarSeccion('historialCard');
+    var container = document.getElementById('historialContent') || document.getElementById('historialCard');
+    if (!container) return;
+    container.innerHTML = '<p style="text-align:center; padding:20px; color:#cbd5e1;">Cargando historial...</p>';
+    supabaseClient.from('cuotas').select('*').eq('alumno_id', alumnoActual.id).eq('pagado', true).order('vencimiento', { ascending: false }).then(function(respuesta) {
+        var data = respuesta.data;
+        var error = respuesta.error;
+        if (error) throw error;
+        if (!data || data.length === 0) {
+            container.innerHTML = '<p style="text-align:center; color:#94a3b8; padding:20px;">No hay pagos registrados aún.</p>';
+            return;
+        }
+        var html = '<div style="padding: 20px;"><h3 style="margin-bottom: 15px; color: #f8fafc;">Historial de Pagos</h3><div style="display: flex; flex-direction: column; gap: 10px;">';
+        for (var i = 0; i < data.length; i++) {
+            var cuota = data[i];
+            var concepto = cuota.concepto || 'Cuota';
+            var vencimiento = new Date(cuota.vencimiento).toLocaleDateString('es-AR');
+            var importe = cuota.importe || 0;
+            html += '<div style="background: rgba(74, 222, 128, 0.1); padding: 15px; border-radius: 8px; border-left: 4px solid #4ade80; display: flex; justify-content: space-between; align-items: center;"><div><span style="font-weight: bold; color: #4ade80; display: block;">✓ ' + concepto + '</span><span style="font-size: 0.9em; color: #cbd5e1;">Vencimiento: ' + vencimiento + '</span></div><span style="color: #4ade80; font-weight: bold; font-size: 1.2em;">$' + importe + '</span></div>';
+        }
+        html += '</div></div>';
+        container.innerHTML = html;
+    }).catch(function(err) {
+        console.error('Error al cargar historial:', err);
+        container.innerHTML = '<p style="text-align:center; color:#ef4444; padding:20px;">Error al cargar el historial.</p>';
+    });
 }
 
 function abrirComprobantes() {
     if (!alumnoActual) { alert('Primero consultá tu DNI.'); return; }
     mostrarSeccion('comprobantesCard');
+    var container = document.getElementById('comprobantesListContainer') || document.getElementById('comprobantesCard');
+    if (!container) return;
+    container.innerHTML = '<p style="text-align:center; padding:20px; color:#cbd5e1;">Cargando comprobantes...</p>';
+    supabaseClient.from('cuotas').select('*').eq('alumno_id', alumnoActual.id).eq('pagado', true).order('vencimiento', { ascending: false }).then(function(respuesta) {
+        var data = respuesta.data;
+        var error = respuesta.error;
+        if (error) throw error;
+        if (!data || data.length === 0) {
+            container.innerHTML = '<p style="text-align:center; color:#94a3b8; padding:20px;">No tenés comprobantes de pago disponibles aún.</p>';
+            return;
+        }
+        var html = '<div style="padding: 20px;"><h3 style="margin-bottom: 15px; color: #f8fafc;">Tus Comprobantes de Pago</h3><div style="display: flex; flex-direction: column; gap: 10px;">';
+        for (var i = 0; i < data.length; i++) {
+            var cuota = data[i];
+            var concepto = cuota.concepto || 'Cuota Mensual';
+            var importe = cuota.importe || 0;
+            var vencimiento = new Date(cuota.vencimiento).toLocaleDateString('es-AR');
+            var btnId = 'btn-descarga-' + i;
+            html += '<div style="display: flex; justify-content: space-between; align-items: center; background: rgba(74, 222, 128, 0.1); padding: 15px; border-radius: 8px; border-left: 4px solid #4ade80;"><div><span style="font-weight: bold; color: #4ade80; display: block;">✓ ' + concepto + '</span><span style="font-size: 0.9em; color: #cbd5e1;">Monto: $' + importe + ' | Vencimiento: ' + vencimiento + '</span></div><button id="' + btnId + '" style="background: #3b82f6; color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;">⬇ Descargar</button></div>';
+        }
+        html += '</div></div>';
+        container.innerHTML = html;
+        for (var i = 0; i < data.length; i++) {
+            var btn = document.getElementById('btn-descarga-' + i);
+            if (btn) {
+                btn.addEventListener('click', function() {
+                    var concepto = this.parentElement.querySelector('span').textContent.replace('✓ ', '');
+                    var importe = this.parentElement.querySelector('span:nth-child(2)').textContent.match(/\$(\d+)/)[1];
+                    var vencimiento = this.parentElement.querySelector('span:nth-child(2)').textContent.match(/Vencimiento: (.+)/)[1];
+                    var texto = '========================================\n       COMPROBANTE DE PAGO\n========================================\nFecha de emisión: ' + new Date().toLocaleDateString('es-AR') + '\n\nDATOS DEL ALUMNO:\nNombre: ' + alumnoActual.nombre + '\nDNI: ' + alumnoActual.dni + '\nCarrera: ' + alumnoActual.carrera + '\n\nDETALLE DEL PAGO:\nConcepto: ' + concepto + '\nImporte: $' + importe + '\nVencimiento: ' + vencimiento + '\nEstado: PAGADO\n========================================';
+                    var blob = new Blob([texto], { type: 'text/plain;charset=utf-8' });
+                    var url = window.URL.createObjectURL(blob);
+                    var a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'Comprobante_' + alumnoActual.dni + '_' + Date.now() + '.txt';
+                    document.body.appendChild(a);
+                    a.click();
+                    setTimeout(function() { document.body.removeChild(a); window.URL.revokeObjectURL(url); }, 100);
+                });
+            }
+        }
+    }).catch(function(err) {
+        console.error('Error al cargar comprobantes:', err);
+        container.innerHTML = '<p style="text-align:center; color:#ef4444; padding:20px;">Error al cargar los comprobantes.</p>';
+    });
 }
 
 function abrirInfoAcademica() {
     if (!alumnoActual) { alert('Primero consultá tu DNI.'); return; }
     mostrarSeccion('infoAcademicaCard');
+    var content = document.getElementById('infoAcademicaContent');
+    if (!content) return;
+    var nombre = alumnoActual.nombre || 'No disponible';
+    var dni = alumnoActual.dni || 'No disponible';
+    var carrera = alumnoActual.carrera || 'No disponible';
+    var anio = alumnoActual.anio || alumnoActual.curso || 'No disponible';
+    content.innerHTML = '<div class="info-grid"><div class="info-item"><span class="info-label">Alumno:</span><span class="info-value">' + nombre + '</span></div><div class="info-item"><span class="info-label">DNI:</span><span class="info-value">' + dni + '</span></div><div class="info-item"><span class="info-label">Carrera:</span><span class="info-value">' + carrera + '</span></div><div class="info-item"><span class="info-label">Año/Curso:</span><span class="info-value">' + anio + '</span></div></div>';
+}
+
+function abrirAyuda() {
+    mostrarSeccion('ayudaCard');
 }
 
 function abrirPerfil() {
     if (!alumnoActual) { alert('Primero consultá tu DNI.'); return; }
     mostrarSeccion('perfilCard');
+    var container = document.getElementById('perfilInfo') || document.getElementById('perfilContent') || document.getElementById('perfilCard');
+    if (!container) return;
+    var nombre = alumnoActual.nombre || 'No disponible';
+    var dni = alumnoActual.dni || 'No disponible';
+    var carrera = alumnoActual.carrera || 'No disponible';
+    var anio = alumnoActual.curso || alumnoActual.anio || 'No disponible';
+    var inicial = nombre.charAt(0).toUpperCase();
+    var estado = document.getElementById('estadoActual') ? document.getElementById('estadoActual').textContent : 'Al día';
+    container.innerHTML = '<div style="padding: 20px;"><div style="text-align: center; margin-bottom: 20px;"><div style="width: 80px; height: 80px; background: #3b82f6; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 32px; color: white; font-weight: bold;">' + inicial + '</div></div><h4 style="color: #f8fafc; text-align: center; margin-bottom: 5px;">' + nombre + '</h4><p style="color: #94a3b8; text-align: center; margin-bottom: 20px;">Alumno</p><div style="display: grid; gap: 12px;"><div style="background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 8px;"><span style="color: #94a3b8; display: block; font-size: 0.9em;">DNI</span><span style="color: #f8fafc; font-weight: bold; font-size: 1.1em;">' + dni + '</span></div><div style="background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 8px;"><span style="color: #94a3b8; display: block; font-size: 0.9em;">Carrera</span><span style="color: #f8fafc; font-weight: bold; font-size: 1.1em;">' + carrera + '</span></div><div style="background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 8px;"><span style="color: #94a3b8; display: block; font-size: 0.9em;">Curso/Año</span><span style="color: #f8fafc; font-weight: bold; font-size: 1.1em;">' + anio + '</span></div><div style="background: rgba(74, 222, 128, 0.1); padding: 15px; border-radius: 8px; border-left: 4px solid #4ade80;"><span style="color: #4ade80; display: block; font-size: 0.9em;">Estado de cuenta</span><span style="color: #4ade80; font-weight: bold; font-size: 1.1em;">' + estado + '</span></div></div></div>';
 }
 
 document.addEventListener('DOMContentLoaded', function() {
