@@ -248,78 +248,70 @@ function abrirPerfil() {
 // FUNCIÓN DE DESCARGA (¡ESTA ES LA QUE TE FALTABA!)
 // ==========================================
 window.generarYDescargarComprobante = function(concepto, importe, vencimiento) {
-    console.log('📥 Iniciando descarga...', { concepto, importe, vencimiento });
+    console.log(' [DESCARGA] Función llamada con:', { concepto, importe, vencimiento });
+    console.log('🔵 [ALUMNO] alumnoActual:', alumnoActual);
     
+    // Verificación de seguridad
     if (!alumnoActual) {
-        alert('Error: No hay alumno seleccionado. Consultá tu DNI primero.');
+        console.error('❌ [ERROR] No hay alumno seleccionado');
+        alert('Error: No hay alumno seleccionado. Volvé a consultar tu DNI.');
         return;
     }
 
-    const fechaEmision = new Date().toLocaleDateString('es-AR');
-    const horaEmision = new Date().toLocaleTimeString('es-AR');
-    const fechaVenc = new Date(vencimiento).toLocaleDateString('es-AR');
-    
-    const textoComprobante = `
+    try {
+        const fechaEmision = new Date().toLocaleDateString('es-AR');
+        const horaEmision = new Date().toLocaleTimeString('es-AR');
+        const fechaVenc = new Date(vencimiento).toLocaleDateString('es-AR');
+        
+        const textoComprobante = `
 ========================================
        COMPROBANTE DE PAGO
 ========================================
 Fecha de emisión: ${fechaEmision} ${horaEmision}
 
 DATOS DEL ALUMNO:
-Nombre: ${alumnoActual.nombre}
-DNI: ${alumnoActual.dni}
-Carrera: ${alumnoActual.carrera}
-Curso/Año: ${alumnoActual.curso || alumnoActual.anio}
+Nombre: ${alumnoActual.nombre || 'N/A'}
+DNI: ${alumnoActual.dni || 'N/A'}
+Carrera: ${alumnoActual.carrera || 'N/A'}
 
 DETALLE DEL PAGO:
 Concepto: ${concepto}
-Importe Pagado: $${importe}
+Importe: $${importe}
+Vencimiento: ${fechaVenc}
 Estado: PAGADO
-Período/Vencimiento: ${fechaVenc}
 ========================================
-Comprobante generado automáticamente.
-========================================
-    `.trim();
+`;
 
-    try {
+        console.log(' [BLOB] Creando archivo...');
         const blob = new Blob([textoComprobante], { type: 'text/plain;charset=utf-8' });
         const url = window.URL.createObjectURL(blob);
+        
+        console.log('🟢 [LINK] Creando elemento de descarga...');
         const a = document.createElement('a');
-        const nombreArchivo = `Comprobante_${alumnoActual.dni}_${concepto.replace(/\s+/g, '_')}.txt`;
+        const nombreArchivo = `Comprobante_${alumnoActual.dni}_${Date.now()}.txt`;
         
         a.href = url;
         a.download = nombreArchivo;
         a.style.display = 'none';
+        
+        console.log('🟢 [DOWNLOAD] Nombre del archivo:', nombreArchivo);
+        console.log('🟢 [DOWNLOAD] Iniciando click programático...');
+        
         document.body.appendChild(a);
         a.click();
         
+        console.log('✅ [ÉXITO] Descarga iniciada');
+        
+        // Limpieza
         setTimeout(() => {
             document.body.removeChild(a);
             window.URL.revokeObjectURL(url);
+            console.log('🟡 [LIMPIEZA] Elementos removidos');
         }, 100);
         
-        console.log('✅ Descarga iniciada:', nombreArchivo);
     } catch (err) {
-        console.error('❌ Error al descargar:', err);
-        alert('Error al generar el comprobante: ' + err.message);
+        console.error('❌ [ERROR FATAL] En generarYDescargarComprobante:', err);
+        console.error('❌ [STACK]', err.stack);
+        alert('Error al descargar: ' + err.message);
     }
 };
-
-// ==========================================
-// INICIALIZACIÓN
-// ==========================================
-document.addEventListener('DOMContentLoaded', () => {
-    const btn = document.getElementById('btnConsultar');
-    if (btn) {
-        btn.addEventListener('click', consultar);
-    }
-    
-    const input = document.getElementById('dniInput');
-    if (input) {
-        input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                consultar();
-            }
-        });
-    }
-});
