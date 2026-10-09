@@ -7,13 +7,13 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
 
 let alumnoActual = null;
 let cuotasActuales = [];
+
 async function consultar() {
     const dniInput = document.getElementById('dniInput');
     const dni = dniInput.value.trim().replace(/[^0-9]/g, '');
     const loading = document.getElementById('loading');
     const errorDiv = document.getElementById('error');
 
-    // Ocultar resultados anteriores
     document.getElementById('infoCard').style.display = 'none';
     document.getElementById('resumenCard').style.display = 'none';
     document.getElementById('cuotasCard').style.display = 'none';
@@ -28,7 +28,6 @@ async function consultar() {
 
     loading.style.display = 'block';
     try {
-        // ⚠️ FIJATE QUE DIGA supabaseClient (con "Client" al final)
         const { data, error } = await supabaseClient
             .from('alumnos')
             .select('*')
@@ -45,20 +44,17 @@ async function consultar() {
         document.getElementById('dni').textContent = data.dni || 'No disponible';
         document.getElementById('carrera').textContent = data.carrera || 'No disponible';
         document.getElementById('curso').textContent = data.curso || data.anio || 'No disponible';
-        // === CALCULAR Y MOSTRAR CIFRAS DE CUOTAS ===
         
-        // Buscar las cuotas del alumno
         const { data: cuotasData } = await supabaseClient
             .from('cuotas')
             .select('*')
-        .eq('alumno_id', alumnoActual.id)
+            .eq('alumno_id', alumnoActual.id)
             .order('vencimiento', { ascending: true });
 
         const totalCuotas = cuotasData ? cuotasData.length : 0;
         const cuotasPagadas = cuotasData ? cuotasData.filter(c => c.pagado === true).length : 0;
         const cuotasPendientes = totalCuotas - cuotasPagadas;
 
-        // Estado actual y último pago
         let estadoActual = 'Al día';
         let ultimoPago = 'Sin pagos';
 
@@ -72,21 +68,16 @@ async function consultar() {
             }
 
             const hoy = new Date();
-            const hayMora = cuotasData.some(c => 
-                c.pagado === false && new Date(c.vencimiento) < hoy
-            );
-
+            const hayMora = cuotasData.some(c => c.pagado === false && new Date(c.vencimiento) < hoy);
             if (hayMora) estadoActual = 'Con mora';
         }
 
-        // Mostrar las cifras en el HTML
         document.getElementById('totalCuotas').textContent = totalCuotas;
         document.getElementById('pagadas').textContent = cuotasPagadas;
         document.getElementById('pendientes').textContent = cuotasPendientes;
         document.getElementById('estadoActual').textContent = estadoActual;
         document.getElementById('ultimoPago').textContent = ultimoPago;
 
-        // Mostrar detalle de cuotas
         const cuotasList = document.getElementById('cuotasList');
         if (cuotasData && cuotasData.length > 0) {
             cuotasList.innerHTML = cuotasData.map(cuota => `
@@ -107,7 +98,6 @@ async function consultar() {
             cuotasList.innerHTML = '<p style="text-align:center; color:#94a3b8; padding:20px;">No hay cuotas registradas</p>';
         }
 
-        // === FIN DE CIFRAS DE CUOTAS ===
         document.getElementById('infoCard').style.display = 'block';
         document.getElementById('resumenCard').style.display = 'block';
         document.getElementById('cuotasCard').style.display = 'block';
@@ -162,15 +152,13 @@ function irAEstado() {
 }
 
 // ==========================================
-// FUNCIONES DE LOS 4 BOTONES
+// FUNCIONES DE LOS BOTONES
 // ==========================================
-
 function abrirHistorial() {
     if (!alumnoActual) { alert('Primero consultá tu DNI.'); return; }
     mostrarSeccion('historialCard');
 }
 
-// === REEMPLAZA TU FUNCIÓN abrirComprobantes ORIGINAL POR ESTA ===
 async function abrirComprobantes() {
     if (!alumnoActual) { 
         alert('Primero consultá tu DNI.'); 
@@ -178,19 +166,16 @@ async function abrirComprobantes() {
     }
     
     mostrarSeccion('comprobantesCard');
-    
-    // Buscamos un contenedor dentro de la tarjeta, o usamos la tarjeta misma
     const container = document.getElementById('comprobantesListContainer') || document.getElementById('comprobantesCard');
     container.innerHTML = '<p style="text-align:center; padding:20px; color:#cbd5e1;">Cargando comprobantes...</p>';
     
     try {
-        // Obtenemos SOLO las cuotas que ya fueron pagadas
         const { data: cuotasPagadas, error } = await supabaseClient
             .from('cuotas')
             .select('*')
             .eq('alumno_id', alumnoActual.id)
             .eq('pagado', true) 
-            .order('vencimiento', { ascending: false }); // Las más recientes primero
+            .order('vencimiento', { ascending: false });
             
         if (error) throw error;
         
@@ -199,23 +184,19 @@ async function abrirComprobantes() {
             return;
         }
         
-        // Generamos la lista visual con botones de descarga
         let html = '<div style="padding: 20px;">';
         html += '<h3 style="margin-bottom: 15px; color: #f8fafc;">Tus Comprobantes de Pago</h3>';
         html += '<div style="display: flex; flex-direction: column; gap: 10px;">';
         
         cuotasPagadas.forEach(cuota => {
-            // Guardamos los datos en atributos data- para usarlos al hacer click
             html += `
                 <div class="cuota-item pagada" style="display: flex; justify-content: space-between; align-items: center; background: rgba(74, 222, 128, 0.1); padding: 15px; border-radius: 8px; border-left: 4px solid #4ade80;">
                     <div class="cuota-info">
                         <span style="font-weight: bold; color: #4ade80; display: block;">✓ ${cuota.concepto || 'Cuota Mensual'}</span>
                         <span style="font-size: 0.9em; color: #cbd5e1;">Monto: $${cuota.importe || 0} | Vencimiento: ${new Date(cuota.vencimiento).toLocaleDateString('es-AR')}</span>
                     </div>
-                    <button class="btn-descargar-comprobante" 
-                        data-concepto="${cuota.concepto || 'Cuota'}" 
-                        data-importe="${cuota.importe || 0}" 
-                        data-vencimiento="${cuota.vencimiento}"
+                    <button 
+                        onclick="window.generarYDescargarComprobante('${cuota.concepto || 'Cuota'}', '${cuota.importe || 0}', '${cuota.vencimiento}')"
                         style="background: #3b82f6; color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: background 0.2s;"
                         onmouseover="this.style.background='#2563eb'" 
                         onmouseout="this.style.background='#3b82f6'">
@@ -224,49 +205,28 @@ async function abrirComprobantes() {
                 </div>
             `;
         });
+        
         html += '</div></div>';
         container.innerHTML = html;
         
-        // Agregamos los eventos a los nuevos botones
-        document.querySelectorAll('.btn-descargar-comprobante').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const concepto = this.getAttribute('data-concepto');
-                const importe = this.getAttribute('data-importe');
-                const vencimiento = this.getAttribute('data-vencimiento');
-                generarYDescargarComprobante(concepto, importe, vencimiento);
-            });
-        });
-        
     } catch (err) {
         console.error('Error al cargar comprobantes:', err);
-        container.innerHTML = '<p style="text-align:center; color:#ef4444; padding:20px;">Error al cargar los comprobantes. Intentá de nuevo.</p>';
+        container.innerHTML = '<p style="text-align:center; color:#ef4444; padding:20px;">Error al cargar los comprobantes.</p>';
     }
 }
+
 function abrirInfoAcademica() {
     if (!alumnoActual) {
         alert('Primero consultá tu DNI.');
         return;
     }
-
     const content = document.getElementById('infoAcademicaContent');
     content.innerHTML = `
         <div class="info-grid">
-            <div class="info-item">
-                <span class="info-label">Alumno:</span>
-                <span class="info-value">${alumnoActual.nombre || 'No disponible'}</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">DNI:</span>
-                <span class="info-value">${alumnoActual.dni || 'No disponible'}</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Carrera:</span>
-                <span class="info-value">${alumnoActual.carrera || 'No disponible'}</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Año/Curso:</span>
-                <span class="info-value">${alumnoActual.anio || alumnoActual.curso || 'No disponible'}</span>
-            </div>
+            <div class="info-item"><span class="info-label">Alumno:</span><span class="info-value">${alumnoActual.nombre || 'No disponible'}</span></div>
+            <div class="info-item"><span class="info-label">DNI:</span><span class="info-value">${alumnoActual.dni || 'No disponible'}</span></div>
+            <div class="info-item"><span class="info-label">Carrera:</span><span class="info-value">${alumnoActual.carrera || 'No disponible'}</span></div>
+            <div class="info-item"><span class="info-label">Año/Curso:</span><span class="info-value">${alumnoActual.anio || alumnoActual.curso || 'No disponible'}</span></div>
         </div>
     `;
     mostrarSeccion('infoAcademicaCard');
@@ -283,6 +243,67 @@ function abrirPerfil() {
     }
     mostrarSeccion('perfilCard');
 }
+
+// ==========================================
+// FUNCIÓN DE DESCARGA (¡ESTA ES LA QUE TE FALTABA!)
+// ==========================================
+window.generarYDescargarComprobante = function(concepto, importe, vencimiento) {
+    console.log('📥 Iniciando descarga...', { concepto, importe, vencimiento });
+    
+    if (!alumnoActual) {
+        alert('Error: No hay alumno seleccionado. Consultá tu DNI primero.');
+        return;
+    }
+
+    const fechaEmision = new Date().toLocaleDateString('es-AR');
+    const horaEmision = new Date().toLocaleTimeString('es-AR');
+    const fechaVenc = new Date(vencimiento).toLocaleDateString('es-AR');
+    
+    const textoComprobante = `
+========================================
+       COMPROBANTE DE PAGO
+========================================
+Fecha de emisión: ${fechaEmision} ${horaEmision}
+
+DATOS DEL ALUMNO:
+Nombre: ${alumnoActual.nombre}
+DNI: ${alumnoActual.dni}
+Carrera: ${alumnoActual.carrera}
+Curso/Año: ${alumnoActual.curso || alumnoActual.anio}
+
+DETALLE DEL PAGO:
+Concepto: ${concepto}
+Importe Pagado: $${importe}
+Estado: PAGADO
+Período/Vencimiento: ${fechaVenc}
+========================================
+Comprobante generado automáticamente.
+========================================
+    `.trim();
+
+    try {
+        const blob = new Blob([textoComprobante], { type: 'text/plain;charset=utf-8' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const nombreArchivo = `Comprobante_${alumnoActual.dni}_${concepto.replace(/\s+/g, '_')}.txt`;
+        
+        a.href = url;
+        a.download = nombreArchivo;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        
+        setTimeout(() => {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }, 100);
+        
+        console.log('✅ Descarga iniciada:', nombreArchivo);
+    } catch (err) {
+        console.error('❌ Error al descargar:', err);
+        alert('Error al generar el comprobante: ' + err.message);
+    }
+};
 
 // ==========================================
 // INICIALIZACIÓN
@@ -302,75 +323,3 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
-// === REEMPLAZA TU FUNCIÓN abrirComprobantes ORIGINAL POR ESTA ===
-async function abrirComprobantes() {
-    if (!alumnoActual) { 
-        alert('Primero consultá tu DNI.'); 
-        return; 
-    }
-    
-    mostrarSeccion('comprobantesCard');
-    
-    // Buscamos un contenedor dentro de la tarjeta, o usamos la tarjeta misma
-    const container = document.getElementById('comprobantesListContainer') || document.getElementById('comprobantesCard');
-    container.innerHTML = '<p style="text-align:center; padding:20px; color:#cbd5e1;">Cargando comprobantes...</p>';
-    
-    try {
-        // Obtenemos SOLO las cuotas que ya fueron pagadas
-        const { data: cuotasPagadas, error } = await supabaseClient
-            .from('cuotas')
-            .select('*')
-            .eq('alumno_id', alumnoActual.id)
-            .eq('pagado', true) 
-            .order('vencimiento', { ascending: false }); // Las más recientes primero
-            
-        if (error) throw error;
-        
-        if (!cuotasPagadas || cuotasPagadas.length === 0) {
-            container.innerHTML = '<p style="text-align:center; color:#94a3b8; padding:20px;">No tenés comprobantes de pago disponibles aún.</p>';
-            return;
-        }
-        
-        // Generamos la lista visual con botones de descarga
-        let html = '<div style="padding: 20px;">';
-        html += '<h3 style="margin-bottom: 15px; color: #f8fafc;">Tus Comprobantes de Pago</h3>';
-        html += '<div style="display: flex; flex-direction: column; gap: 10px;">';
-        
-        cuotasPagadas.forEach(cuota => {
-            // Guardamos los datos en atributos data- para usarlos al hacer click
-            html += `
-                <div class="cuota-item pagada" style="display: flex; justify-content: space-between; align-items: center; background: rgba(74, 222, 128, 0.1); padding: 15px; border-radius: 8px; border-left: 4px solid #4ade80;">
-                    <div class="cuota-info">
-                        <span style="font-weight: bold; color: #4ade80; display: block;">✓ ${cuota.concepto || 'Cuota Mensual'}</span>
-                        <span style="font-size: 0.9em; color: #cbd5e1;">Monto: $${cuota.importe || 0} | Vencimiento: ${new Date(cuota.vencimiento).toLocaleDateString('es-AR')}</span>
-                    </div>
-                    <button class="btn-descargar-comprobante" 
-                        data-concepto="${cuota.concepto || 'Cuota'}" 
-                        data-importe="${cuota.importe || 0}" 
-                        data-vencimiento="${cuota.vencimiento}"
-                        style="background: #3b82f6; color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: background 0.2s;"
-                        onmouseover="this.style.background='#2563eb'" 
-                        onmouseout="this.style.background='#3b82f6'">
-                        ⬇ Descargar
-                    </button>
-                </div>
-            `;
-        });
-        html += '</div></div>';
-        container.innerHTML = html;
-        
-        // Agregamos los eventos a los nuevos botones
-        document.querySelectorAll('.btn-descargar-comprobante').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const concepto = this.getAttribute('data-concepto');
-                const importe = this.getAttribute('data-importe');
-                const vencimiento = this.getAttribute('data-vencimiento');
-                generarYDescargarComprobante(concepto, importe, vencimiento);
-            });
-        });
-        
-    } catch (err) {
-        console.error('Error al cargar comprobantes:', err);
-        container.innerHTML = '<p style="text-align:center; color:#ef4444; padding:20px;">Error al cargar los comprobantes. Intentá de nuevo.</p>';
-    }
-}
