@@ -7,13 +7,11 @@
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <div class="app-container">
         
-        <!-- HEADER -->
         <header class="header">
             <div class="logo">
                 <img src="img/logo-ispi.png" alt="ISPI 4019" class="logo-img">
@@ -22,7 +20,6 @@
             <p class="subtitle">Visualizá tu estado de cuenta</p>
         </header>
 
-        <!-- BUSCADOR DNI -->
         <section class="card search-card">
             <div class="card-header">
                 <span class="material-icons-round">person</span>
@@ -35,7 +32,7 @@
                 <span class="material-icons-round">person_outline</span>
                 <input type="text" id="dniInput" placeholder="Ej: 34567890">
             </div>
-            <button class="btn-primary" id="btnConsultar" onclick="consultar()">
+            <button class="btn-primary" id="btnConsultar">
                 <span class="material-icons-round">search</span>
                 Consultar
             </button>
@@ -45,16 +42,13 @@
             </p>
         </section>
 
-        <!-- LOADING -->
         <div id="loading" style="display:none; text-align:center; padding:20px;">
             <div class="spinner"></div>
             <p>Buscando...</p>
         </div>
 
-        <!-- ERROR -->
         <div id="error" style="display:none; text-align:center; padding:20px; color:#f87171;"></div>
 
-        <!-- INFORMACIÓN DEL ALUMNO -->
         <section class="card info-card" id="infoCard" style="display:none;">
             <div class="card-header">
                 <span class="material-icons-round">school</span>
@@ -80,7 +74,6 @@
             </div>
         </section>
 
-        <!-- RESUMEN DE CUENTA -->
         <section class="card resumen-card" id="resumenCard" style="display:none;">
             <div class="card-header">
                 <span class="material-icons-round">description</span>
@@ -115,7 +108,6 @@
             </div>
         </section>
 
-        <!-- DETALLE DE CUOTAS -->
         <section class="card cuotas-card" id="cuotasCard" style="display:none;">
             <div class="card-header">
                 <span class="material-icons-round">receipt</span>
@@ -123,7 +115,18 @@
             </div>
             <div class="cuotas-list" id="cuotasList"></div>
         </section>
-        <!-- SECCIÓN DESCARGAR COMPROBANTES -->
+
+        <section class="card" id="historialCard" style="display:none;">
+            <div class="card-header">
+                <span class="material-icons-round">history</span>
+                <h3>Historial de pagos</h3>
+                <button class="btn-volver" onclick="volverInicio()">
+                    <span class="material-icons-round">arrow_back</span> Volver
+                </button>
+            </div>
+            <div id="historialContent"></div>
+        </section>
+
         <section class="card" id="comprobantesCard" style="display:none;">
             <div class="card-header">
                 <span class="material-icons-round">download</span>
@@ -132,23 +135,19 @@
                     <span class="material-icons-round">arrow_back</span> Volver
                 </button>
             </div>
-            <div id="comprobantesList"></div>
+            <div id="comprobantesListContainer"></div>
         </section>
 
-        <!-- SECCIÓN INFORMACIÓN ACADÉMICA (UNA SOLA VEZ) -->
         <section id="infoAcademicaCard" class="card" style="display:none;">
             <div class="card-header">
                 <button class="btn-volver" onclick="volverInicio()">
                     <span class="material-icons-round">arrow_back</span> Volver
                 </button>
-                <h3>📚 Información Académica</h3>
+                <h3>Información Académica</h3>
             </div>
-            <div id="infoAcademicaContent">
-                <!-- Se llena con JavaScript -->
-            </div>
+            <div id="infoAcademicaContent"></div>
         </section>
 
-        <!-- SECCIÓN AYUDA Y CONTACTO -->
         <section class="card" id="ayudaCard" style="display:none;">
             <div class="card-header">
                 <span class="material-icons-round">headphones</span>
@@ -165,59 +164,17 @@
             </div>
         </section>
 
-        <!-- SECCIÓN PERFIL -->
-       function abrirPerfil() {
-    alert('🔵 La función abrirPerfil se ejecutó');
-    
-    if (!alumnoActual) {
-        alert('❌ No hay alumnoActual');
-        return;
-    }
-    
-    alert('✅ Hay alumnoActual: ' + alumnoActual.nombre);
-    
-    const container = document.getElementById('perfilInfo');
-    
-    if (!container) {
-        alert('❌ No existe el elemento con id="perfilInfo"');
-        return;
-    }
-    
-    alert('✅ Encontré el contenedor perfilInfo');
-    
-    container.innerHTML = `
-        <div style="padding: 20px;">
-            <div style="text-align: center; margin-bottom: 20px;">
-                <div style="width: 80px; height: 80px; background: #3b82f6; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 32px; color: white; font-weight: bold;">
-                    ${alumnoActual.nombre ? alumnoActual.nombre.charAt(0).toUpperCase() : '?'}
-                </div>
+        <section class="card" id="perfilCard" style="display:none;">
+            <div class="card-header">
+                <span class="material-icons-round">person</span>
+                <h3>Mi Perfil</h3>
+                <button class="btn-volver" onclick="volverInicio()">
+                    <span class="material-icons-round">arrow_back</span> Volver
+                </button>
             </div>
-            
-            <h4 style="color: #f8fafc; text-align: center; margin-bottom: 5px;">${alumnoActual.nombre || 'No disponible'}</h4>
-            <p style="color: #94a3b8; text-align: center; margin-bottom: 20px;">Alumno</p>
-            
-            <div style="display: grid; gap: 12px;">
-                <div style="background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 8px;">
-                    <span style="color: #94a3b8; display: block; font-size: 0.9em;">DNI</span>
-                    <span style="color: #f8fafc; font-weight: bold; font-size: 1.1em;">${alumnoActual.dni || 'No disponible'}</span>
-                </div>
-                
-                <div style="background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 8px;">
-                    <span style="color: #94a3b8; display: block; font-size: 0.9em;">Carrera</span>
-                    <span style="color: #f8fafc; font-weight: bold; font-size: 1.1em;">${alumnoActual.carrera || 'No disponible'}</span>
-                </div>
-                
-                <div style="background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 8px;">
-                    <span style="color: #94a3b8; display: block; font-size: 0.9em;">Curso/Año</span>
-                    <span style="color: #f8fafc; font-weight: bold; font-size: 1.1em;">${alumnoActual.curso || alumnoActual.anio || 'No disponible'}</span>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    alert('✅ Perfil renderizado correctamente');
-}
-        <!-- === ACCESOS RÁPIDOS (EXACTAMENTE 4 BOTONES) === -->
+            <div id="perfilInfo"></div>
+        </section>
+
         <section class="card accesos-card">
             <h3>Accesos rápidos</h3>
             <div class="quick-grid">
@@ -240,7 +197,6 @@
             </div>
         </section>
 
-        <!-- BOTTOM NAV -->
         <nav class="bottom-nav">
             <button class="nav-item active" onclick="volverInicio()">
                 <span class="material-icons-round">home</span>
@@ -260,8 +216,8 @@
             </button>
         </nav>
 
-    </div> <!-- Cierre de app-container -->
+    </div>
 
-           <script src="script.js?v=12"></script>
+    <script src="script.js"></script>
 </body>
 </html>
