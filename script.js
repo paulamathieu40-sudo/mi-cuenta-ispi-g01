@@ -438,3 +438,27 @@ Estado: PAGADO
         alert('Error al descargar: ' + err.message);
     }
 };
+// Forzar el evento click en el botón de perfil
+document.addEventListener('DOMContentLoaded', () => {
+    // Buscar todos los botones que puedan abrir el perfil
+    const botonesPerfil = document.querySelectorAll('[onclick*="abrirPerfil"], .btn-perfil, #btnPerfil');
+    
+    botonesPerfil.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('🔵 Click en botón de perfil detectado');
+            abrirPerfil();
+        });
+    });
+    
+    // Si no encontró ningún botón, buscamos por texto
+    const todosLosBotones = document.querySelectorAll('button, a, div');
+    todosLosBotones.forEach(btn => {
+        if (btn.textContent.includes('Perfil') && !btn.onclick) {
+            btn.addEventListener('click', function(e) {
+                console.log('🔵 Click en elemento con texto "Perfil" detectado');
+                abrirPerfil();
+            });
+        }
+    });
+});
