@@ -165,7 +165,6 @@ function abrirHistorial() {
     const container = document.getElementById('historialContent') || document.getElementById('historialCard');
     container.innerHTML = '<p style="text-align:center; padding:20px; color:#cbd5e1;">Cargando historial...</p>';
     
-    // Cargar el historial de pagos desde Supabase
     supabaseClient
         .from('cuotas')
         .select('*')
@@ -186,14 +185,12 @@ function abrirHistorial() {
             
             data.forEach(cuota => {
                 html += `
-                    <div style="background: rgba(74, 222, 128, 0.1); padding: 15px; border-radius: 8px; border-left: 4px solid #4ade80;">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <div>
-                                <span style="font-weight: bold; color: #4ade80; display: block;">✓ ${cuota.concepto || 'Cuota'}</span>
-                                <span style="font-size: 0.9em; color: #cbd5e1;">Pagado el: ${new Date(cuota.vencimiento).toLocaleDateString('es-AR')}</span>
-                            </div>
-                            <span style="color: #4ade80; font-weight: bold;">$${cuota.importe || 0}</span>
+                    <div style="background: rgba(74, 222, 128, 0.1); padding: 15px; border-radius: 8px; border-left: 4px solid #4ade80; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <span style="font-weight: bold; color: #4ade80; display: block;">✓ ${cuota.concepto || 'Cuota'}</span>
+                            <span style="font-size: 0.9em; color: #cbd5e1;">Vencimiento: ${new Date(cuota.vencimiento).toLocaleDateString('es-AR')}</span>
                         </div>
+                        <span style="color: #4ade80; font-weight: bold; font-size: 1.2em;">$${cuota.importe || 0}</span>
                     </div>
                 `;
             });
@@ -331,13 +328,55 @@ function abrirInfoAcademica() {
 function abrirAyuda() {
     mostrarSeccion('ayudaCard');
 }
-
 function abrirPerfil() {
     if (!alumnoActual) {
         alert('Primero consultá tu DNI.');
         return;
     }
+    
     mostrarSeccion('perfilCard');
+    
+    const container = document.getElementById('perfilContent') || document.getElementById('perfilCard');
+    
+    container.innerHTML = `
+        <div style="padding: 20px;">
+            <h3 style="margin-bottom: 20px; color: #f8fafc;">Mi Perfil</h3>
+            
+            <div style="background: rgba(59, 130, 246, 0.1); padding: 20px; border-radius: 12px; border-left: 4px solid #3b82f6; margin-bottom: 15px;">
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                    <div style="width: 60px; height: 60px; background: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: white; font-weight: bold;">
+                        ${alumnoActual.nombre ? alumnoActual.nombre.charAt(0).toUpperCase() : '?'}
+                    </div>
+                    <div>
+                        <h4 style="color: #f8fafc; margin: 0; font-size: 1.3em;">${alumnoActual.nombre || 'No disponible'}</h4>
+                        <p style="color: #94a3b8; margin: 5px 0 0 0;">Alumno</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="display: grid; gap: 12px;">
+                <div style="background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #94a3b8;">📄 DNI:</span>
+                    <span style="color: #f8fafc; font-weight: bold;">${alumnoActual.dni || 'No disponible'}</span>
+                </div>
+                
+                <div style="background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #94a3b8;">🎓 Carrera:</span>
+                    <span style="color: #f8fafc; font-weight: bold;">${alumnoActual.carrera || 'No disponible'}</span>
+                </div>
+                
+                <div style="background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #94a3b8;">📚 Curso/Año:</span>
+                    <span style="color: #f8fafc; font-weight: bold;">${alumnoActual.curso || alumnoActual.anio || 'No disponible'}</span>
+                </div>
+                
+                <div style="background: rgba(74, 222, 128, 0.1); padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #4ade80;">
+                    <span style="color: #4ade80;">✓ Estado:</span>
+                    <span style="color: #4ade80; font-weight: bold;">${document.getElementById('estadoActual')?.textContent || 'Al día'}</span>
+                </div>
+            </div>
+        </div>
+    `;
 }
 // ==========================================
 // FUNCIÓN GLOBAL DE DESCARGA
