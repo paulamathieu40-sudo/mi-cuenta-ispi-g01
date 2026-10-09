@@ -129,7 +129,6 @@ function abrirInfoAcademica() {
 function abrirAyuda() {
     mostrarSeccion('ayudaCard');
 }
-
 function abrirPerfil() {
     if (!alumnoActual) { alert('Primero consultá tu DNI.'); return; }
     mostrarSeccion('perfilCard');
@@ -142,14 +141,3 @@ function abrirPerfil() {
     var inicial = nombre.charAt(0).toUpperCase();
     container.innerHTML = '<div style="padding:20px;"><div style="text-align:center;margin-bottom:20px;"><div style="width:80px;height:80px;background:#3b82f6;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:32px;color:white;font-weight:bold;">' + inicial + '</div></div><h4 style="color:#f8fafc;text-align:center;margin-bottom:5px;">' + nombre + '</h4><p style="color:#94a3b8;text-align:center;margin-bottom:20px;">Alumno</p><div style="display:grid;gap:12px;"><div style="background:rgba(255,255,255,0.05);padding:15px;border-radius:8px;"><span style="color:#94a3b8;display:block;font-size:0.9em;">DNI</span><span style="color:#f8fafc;font-weight:bold;font-size:1.1em;">' + dni + '</span></div><div style="background:rgba(255,255,255,0.05);padding:15px;border-radius:8px;"><span style="color:#94a3b8;display:block;font-size:0.9em;">Carrera</span><span style="color:#f8fafc;font-weight:bold;font-size:1.1em;">' + carrera + '</span></div><div style="background:rgba(255,255,255,0.05);padding:15px;border-radius:8px;"><span style="color:#94a3b8;display:block;font-size:0.9em;">Curso/Año</span><span style="color:#f8fafc;font-weight:bold;font-size:1.1em;">' + anio + '</span></div></div></div>';
 }
-
-document.addEventListener('DOMContentLoaded', function() {
-    var btn = document.getElementById('btnConsultar');
-    if (btn) { btn.addEventListener('click', consultar); }
-    var input = document.getElementById('dniInput');
-    if (input) {
-        input.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') { consultar(); }
-        });
-    }
-});
