@@ -23,7 +23,7 @@ async function consultar() {
         var result = await supabaseClient.from('alumnos').select('*').eq('dni', dni).single();
         var data = result.data;
         var error = result.error;
-        if (error || !data) { throw new Error('DNI no encontrado. Verificá el número.'); }
+        if (error || !data) { throw new Error('DNI no encontrado.'); }
         alumnoActual = data;
         document.getElementById('nombre').textContent = data.nombre || 'No disponible';
         document.getElementById('dni').textContent = data.dni || 'No disponible';
@@ -71,8 +71,8 @@ async function consultar() {
         document.getElementById('resumenCard').style.display = 'block';
         document.getElementById('cuotasCard').style.display = 'block';
     } catch (err) {
-        console.error('Error al consultar:', err);
-        errorDiv.textContent = err.message || 'Error al buscar. Intentá de nuevo.';
+        console.error('Error:', err);
+        errorDiv.textContent = err.message || 'Error al buscar.';
         errorDiv.style.display = 'block';
         alumnoActual = null;
     } finally {
@@ -106,6 +106,11 @@ function volverInicio() {
     }
 }
 
+function irAEstado() {
+    if (!alumnoActual) { alert('Primero consultá tu DNI.'); return; }
+    document.getElementById('resumenCard').scrollIntoView({ behavior: 'smooth' });
+}
+
 function abrirHistorial() {
     if (!alumnoActual) { alert('Primero consultá tu DNI.'); return; }
     mostrarSeccion('historialCard');
@@ -121,9 +126,21 @@ function abrirInfoAcademica() {
     mostrarSeccion('infoAcademicaCard');
 }
 
+function abrirAyuda() {
+    mostrarSeccion('ayudaCard');
+}
+
 function abrirPerfil() {
     if (!alumnoActual) { alert('Primero consultá tu DNI.'); return; }
     mostrarSeccion('perfilCard');
+    var container = document.getElementById('perfilInfo');
+    if (!container) return;
+    var nombre = alumnoActual.nombre || 'No disponible';
+    var dni = alumnoActual.dni || 'No disponible';
+    var carrera = alumnoActual.carrera || 'No disponible';
+    var anio = alumnoActual.curso || alumnoActual.anio || 'No disponible';
+    var inicial = nombre.charAt(0).toUpperCase();
+    container.innerHTML = '<div style="padding:20px;"><div style="text-align:center;margin-bottom:20px;"><div style="width:80px;height:80px;background:#3b82f6;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:32px;color:white;font-weight:bold;">' + inicial + '</div></div><h4 style="color:#f8fafc;text-align:center;margin-bottom:5px;">' + nombre + '</h4><p style="color:#94a3b8;text-align:center;margin-bottom:20px;">Alumno</p><div style="display:grid;gap:12px;"><div style="background:rgba(255,255,255,0.05);padding:15px;border-radius:8px;"><span style="color:#94a3b8;display:block;font-size:0.9em;">DNI</span><span style="color:#f8fafc;font-weight:bold;font-size:1.1em;">' + dni + '</span></div><div style="background:rgba(255,255,255,0.05);padding:15px;border-radius:8px;"><span style="color:#94a3b8;display:block;font-size:0.9em;">Carrera</span><span style="color:#f8fafc;font-weight:bold;font-size:1.1em;">' + carrera + '</span></div><div style="background:rgba(255,255,255,0.05);padding:15px;border-radius:8px;"><span style="color:#94a3b8;display:block;font-size:0.9em;">Curso/Año</span><span style="color:#f8fafc;font-weight:bold;font-size:1.1em;">' + anio + '</span></div></div></div>';
 }
 
 document.addEventListener('DOMContentLoaded', function() {
