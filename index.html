@@ -1,220 +1,139 @@
 ﻿<!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Cuenta - ISPI</title>
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@@supabase/supabase-js@2"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Cuenta ISPI</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+  body { background: #0a0e27; color: white; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding-bottom: 80px; }
+  
+  .logo-box { background: white; border-radius: 12px; padding: 10px; margin-top: 20px; text-align: center; width: 130px; }
+  .logo-box .top-icons { display: flex; justify-content: space-around; margin-bottom: 5px; }
+  .logo-box .top-icons span { font-size: 22px; }
+  .logo-box .dni-label { background: #1a237e; color: white; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 16px; display: inline-block; margin: 5px 0; }
+  .logo-box .sub { font-size: 8px; color: #333; letter-spacing: 1px; }
+  
+  h1 { margin-top: 15px; font-size: 26px; letter-spacing: 2px; }
+  .subtitle { color: #8a94b8; margin-top: 8px; font-size: 14px; }
+  
+  .card { background: #141a3a; border: 1px solid #2a3260; border-radius: 16px; padding: 25px; margin-top: 30px; width: 90%; max-width: 500px; }
+  
+  .card-header { display: flex; align-items: center; gap: 12px; padding-bottom: 15px; border-bottom: 1px solid #2a3260; margin-bottom: 20px; }
+  .card-header .icon-circle { width: 40px; height: 40px; background: #1e2550; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #5b9aff; font-size: 20px; }
+  .card-header h2 { font-size: 18px; }
+  .card-header p { color: #8a94b8; font-size: 13px; }
+  
+  .input-group { background: #0d1230; border: 1px solid #2a3260; border-radius: 10px; padding: 12px 15px; display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
+  .input-group .icon { color: #8a94b8; font-size: 18px; }
+  .input-group input { background: transparent; border: none; outline: none; color: white; font-size: 16px; width: 100%; }
+  .input-group input::placeholder { color: #5a6388; }
+  
+  .error-msg { color: #ef4444; font-size: 13px; margin-bottom: 10px; display: none; }
+  .error-msg.show { display: block; }
+  
+  .btn-consultar { width: 100%; background: #2563eb; color: white; border: none; border-radius: 10px; padding: 15px; font-size: 16px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s; }
+  .btn-consultar:hover { background: #1d4ed8; }
+  .btn-consultar:disabled { background: #1e3a8a; cursor: not-allowed; opacity: 0.6; }
+  
+  .privacy { text-align: center; margin-top: 15px; font-size: 12px; color: #8a94b8; }
+  
+  .result { margin-top: 15px; padding: 15px; background: #0d1230; border-radius: 10px; border: 1px solid #2a3260; display: none; font-size: 14px; line-height: 1.8; }
+  .result.show { display: block; }
+  .result .label { color: #8a94b8; }
+  .result .value { color: white; font-weight: 600; }
+  
+  .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 500px; background: #141a3a; border-top: 1px solid #2a3260; display: flex; justify-content: space-around; padding: 12px 0; }
+  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #8a94b8; font-size: 11px; cursor: pointer; }
+  .nav-item.active { color: #5b9aff; }
+  .nav-item .icon { font-size: 20px; }
+</style>
 </head>
 <body>
-    <div class="app-container">
-        <header class="header">
-            <div class="logo">
-                <img src="img/logo-ispi.png" alt="ISPI 4019" class="logo-img">
-            </div>
-            <h1>MI CUENTA ISPI</h1>
-            <p class="subtitle">Visualizá tu estado de cuenta</p>
-        </header>
 
-        <section class="card search-card">
-            <div class="card-header">
-                <span class="material-icons-round">person</span>
-                <div>
-                    <h3>Ingresá tu DNI</h3>
-                    <p>Para consultar tu información</p>
-                </div>
-            </div>
-            <div class="input-group">
-                <span class="material-icons-round">person_outline</span>
-                <input type="text" id="dniInput" placeholder="Ej: 34567890">
-            </div>
-            <button class="btn-primary" id="btnConsultar">
-                <span class="material-icons-round">search</span>
-                Consultar
-            </button>
-            <p class="security-note">
-                <span class="material-icons-round">lock</span>
-                Tus datos están protegidos y son confidenciales
-            </p>
-        </section>
+<div class="logo-box">
+  <div class="top-icons"><span>🏥</span><span>⚕️</span><span>😊</span></div>
+  <div class="dni-label">ISPI 4019</div>
+  <div class="sub">CAJA DE ASISTENCIA</div>
+</div>
 
-        <div id="loading" style="display:none; text-align:center; padding:20px;">
-            <div class="spinner"></div>
-            <p>Buscando...</p>
-        </div>
+<h1>MI CUENTA ISPI</h1>
+<p class="subtitle">Visualizá tu estado de cuenta</p>
 
-        <div id="error" style="display:none; text-align:center; padding:20px; color:#f87171;"></div>
-
-        <section class="card info-card" id="infoCard" style="display:none;">
-            <div class="card-header">
-                <span class="material-icons-round">school</span>
-                <h3>Información del alumno</h3>
-            </div>
-            <div class="info-grid">
-                <div class="info-item">
-                    <label>Nombre y Apellido</label>
-                    <p id="nombre">—</p>
-                </div>
-                <div class="info-item">
-                    <label>DNI</label>
-                    <p id="dni">—</p>
-                </div>
-                <div class="info-item">
-                    <label>Carrera</label>
-                    <p id="carrera">—</p>
-                </div>
-                <div class="info-item">
-                    <label>Curso</label>
-                    <p id="curso">—</p>
-                </div>
-            </div>
-        </section>
-
-        <section class="card resumen-card" id="resumenCard" style="display:none;">
-            <div class="card-header">
-                <span class="material-icons-round">description</span>
-                <h3>Resumen de cuenta</h3>
-            </div>
-            <div class="stats-grid">
-                <div class="stat-box blue">
-                    <span class="material-icons-round">receipt_long</span>
-                    <p>Total cuotas</p>
-                    <h2 id="totalCuotas">0</h2>
-                </div>
-                <div class="stat-box green">
-                    <span class="material-icons-round">check_circle</span>
-                    <p>Cuotas pagadas</p>
-                    <h2 id="pagadas">0</h2>
-                </div>
-                <div class="stat-box orange">
-                    <span class="material-icons-round">info</span>
-                    <p>Cuotas pendientes</p>
-                    <h2 id="pendientes">0</h2>
-                </div>
-            </div>
-            <div class="status-bar">
-                <div class="status-item">
-                    <span>Estado actual</span>
-                    <span class="badge aldia" id="estadoActual">—</span>
-                </div>
-                <div class="status-item">
-                    <span>Último pago</span>
-                    <span id="ultimoPago">—</span>
-                </div>
-            </div>
-        </section>
-
-        <section class="card cuotas-card" id="cuotasCard" style="display:none;">
-            <div class="card-header">
-                <span class="material-icons-round">receipt</span>
-                <h3>Detalle de cuotas</h3>
-            </div>
-            <div class="cuotas-list" id="cuotasList"></div>
-        </section>
-
-        <section class="card" id="historialCard" style="display:none;">
-            <div class="card-header">
-                <span class="material-icons-round">history</span>
-                <h3>Historial de pagos</h3>
-                <button class="btn-volver" onclick="volverInicio()">
-                    <span class="material-icons-round">arrow_back</span> Volver
-                </button>
-            </div>
-            <div id="historialContent"></div>
-        </section>
-
-        <section class="card" id="comprobantesCard" style="display:none;">
-            <div class="card-header">
-                <span class="material-icons-round">download</span>
-                <h3>Descargar comprobantes</h3>
-                <button class="btn-volver" onclick="volverInicio()">
-                    <span class="material-icons-round">arrow_back</span> Volver
-                </button>
-            </div>
-            <div id="comprobantesListContainer"></div>
-        </section>
-
-        <section id="infoAcademicaCard" class="card" style="display:none;">
-            <div class="card-header">
-                <button class="btn-volver" onclick="volverInicio()">
-                    <span class="material-icons-round">arrow_back</span> Volver
-                </button>
-                <h3>Información Académica</h3>
-            </div>
-            <div id="infoAcademicaContent"></div>
-        </section>
-
-        <section class="card" id="ayudaCard" style="display:none;">
-            <div class="card-header">
-                <span class="material-icons-round">headphones</span>
-                <h3>Ayuda y contacto</h3>
-                <button class="btn-volver" onclick="volverInicio()">
-                    <span class="material-icons-round">arrow_back</span> Volver
-                </button>
-            </div>
-            <div class="ayuda-content">
-                <p> <strong>Teléfono:</strong> (011) 1234-5678</p>
-                <p>📧 <strong>Email:</strong> contacto@ispi4019.edu.ar</p>
-                <p>📍 <strong>Dirección:</strong> Calle Falsa 123</p>
-                <p>🕐 <strong>Horario:</strong> Lunes a Viernes 8:00 - 18:00</p>
-            </div>
-        </section>
-
-        <section class="card" id="perfilCard" style="display:none;">
-            <div class="card-header">
-                <span class="material-icons-round">person</span>
-                <h3>Mi Perfil</h3>
-                <button class="btn-volver" onclick="volverInicio()">
-                    <span class="material-icons-round">arrow_back</span> Volver
-                </button>
-            </div>
-            <div id="perfilInfo"></div>
-        </section>
-
-        <section class="card accesos-card">
-            <h3>Accesos rápidos</h3>
-            <div class="quick-grid">
-                <button class="quick-btn" onclick="abrirHistorial()">
-                    <span class="material-icons-round">history</span>
-                    <span>Historial de pagos</span>
-                </button>
-                <button class="quick-btn" onclick="abrirComprobantes()">
-                    <span class="material-icons-round">download</span>
-                    <span>Descargar comprobantes</span>
-                </button>
-                <button class="quick-btn" onclick="abrirInfoAcademica()">
-                    <span class="material-icons-round">info</span>
-                    <span>Información académica</span>
-                </button>
-                <button class="quick-btn" onclick="abrirAyuda()">
-                    <span class="material-icons-round">headset_mic</span>
-                    <span>Ayuda y contacto</span>
-                </button>
-            </div>
-        </section>
-
-        <nav class="bottom-nav">
-            <button class="nav-item active" onclick="volverInicio()">
-                <span class="material-icons-round">home</span>
-                <span>Inicio</span>
-            </button>
-            <button class="nav-item" onclick="irAEstado()">
-                <span class="material-icons-round">receipt_long</span>
-                <span>Estado de cuenta</span>
-            </button>
-            <button class="nav-item" onclick="abrirHistorial()">
-                <span class="material-icons-round">history</span>
-                <span>Historial</span>
-            </button>
-            <button class="nav-item" onclick="abrirPerfil()">
-                <span class="material-icons-round">person</span>
-                <span>Perfil</span>
-            </button>
-        </nav>
+<div class="card">
+  <div class="card-header">
+    <div class="icon-circle">👤</div>
+    <div>
+      <h2>Ingresá tu DNI</h2>
+      <p>Para consultar tu información</p>
     </div>
-    <script src="script.js"></script>
+  </div>
+
+  <div class="input-group">
+    <span class="icon">👤</span>
+    <input type="text" id="dniInput" inputmode="numeric" pattern="[0-9]*" placeholder="Ingresá tu DNI" maxlength="8" autocomplete="off">
+  </div>
+
+  <p class="error-msg" id="errorMsg">El DNI debe tener entre 7 y 8 dígitos</p>
+
+  <button class="btn-consultar" id="btnConsultar">🔍 Consultar</button>
+
+  <div class="result" id="result">
+    <div><span class="label">DNI:</span> <span class="value" id="resDni"></span></div>
+    <div><span class="label">Afiliado:</span> <span class="value" id="resNombre"></span></div>
+    <div><span class="label">Estado:</span> <span class="value" style="color:#4ade80;">Activo ✅</span></div>
+    <div><span class="label">Saldo:</span> <span class="value" id="resSaldo"></span></div>
+  </div>
+
+  <p class="privacy">🔒 Tus datos están protegidos y son confidenciales</p>
+</div>
+
+<div class="bottom-nav">
+  <div class="nav-item active"><span class="icon">🏠</span><span>Inicio</span></div>
+  <div class="nav-item"><span class="icon">📋</span><span>Estado de cuenta</span></div>
+  <div class="nav-item"><span class="icon">🕐</span><span>Historial</span></div>
+  <div class="nav-item"><span class="icon"></span><span>Perfil</span></div>
+</div>
+
+<script>
+  const dniInput = document.getElementById('dniInput');
+  const btnConsultar = document.getElementById('btnConsultar');
+  const errorMsg = document.getElementById('errorMsg');
+  const result = document.getElementById('result');
+
+  dniInput.addEventListener('input', (e) => {
+    e.target.value = e.target.value.replace(/[^0-9]/g, '');
+    errorMsg.classList.remove('show');
+    result.classList.remove('show');
+  });
+
+  dniInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') consultar();
+  });
+
+  btnConsultar.addEventListener('click', consultar);
+
+  function consultar() {
+    const dni = dniInput.value.trim();
+    if (dni.length < 7 || dni.length > 8) {
+      errorMsg.classList.add('show');
+      result.classList.remove('show');
+      return;
+    }
+    errorMsg.classList.remove('show');
+    btnConsultar.disabled = true;
+    btnConsultar.textContent = ' Consultando...';
+
+    setTimeout(() => {
+      btnConsultar.disabled = false;
+      btnConsultar.textContent = '🔍 Consultar';
+      document.getElementById('resDni').textContent = dni;
+      document.getElementById('resNombre').textContent = 'AFILIADO EJEMPLO';
+      document.getElementById('resSaldo').textContent = '$ 0,00';
+      result.classList.add('show');
+    }, 1200);
+  }
+</script>
+
 </body>
 </html>
