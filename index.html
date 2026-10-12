@@ -4,15 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mi Cuenta ISPI</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
   body { background: #0a0e27; color: white; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding-bottom: 80px; }
   
-  .logo-box { background: white; border-radius: 12px; padding: 10px; margin-top: 20px; text-align: center; width: 130px; }
-  .logo-box .top-icons { display: flex; justify-content: space-around; margin-bottom: 5px; }
-  .logo-box .top-icons span { font-size: 22px; }
-  .logo-box .dni-label { background: #1a237e; color: white; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 16px; display: inline-block; margin: 5px 0; }
-  .logo-box .sub { font-size: 8px; color: #333; letter-spacing: 1px; }
+  .logo-box { margin-top: 20px; width: 140px; }
+  .logo-box img { width: 100%; border-radius: 12px; }
   
   h1 { margin-top: 15px; font-size: 26px; letter-spacing: 2px; }
   .subtitle { color: #8a94b8; margin-top: 8px; font-size: 14px; }
@@ -43,18 +41,46 @@
   .result .label { color: #8a94b8; }
   .result .value { color: white; font-weight: 600; }
   
+  .accesos-rapidos { background: #141a3a; border: 1px solid #2a3260; border-radius: 16px; padding: 25px; margin-top: 20px; width: 90%; max-width: 500px; }
+  .accesos-rapidos h2 { font-size: 20px; margin-bottom: 20px; }
+  
+  .acceso-card { background: #1e2550; border: 1px solid #2a3260; border-radius: 12px; padding: 25px; margin-bottom: 15px; text-align: center; cursor: pointer; transition: background 0.2s; }
+  .acceso-card:hover { background: #252d60; }
+  .acceso-card .icon { font-size: 32px; color: #5b9aff; margin-bottom: 10px; }
+  .acceso-card .text { font-size: 14px; font-weight: 600; }
+  
   .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 500px; background: #141a3a; border-top: 1px solid #2a3260; display: flex; justify-content: space-around; padding: 12px 0; }
   .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #8a94b8; font-size: 11px; cursor: pointer; }
   .nav-item.active { color: #5b9aff; }
   .nav-item .icon { font-size: 20px; }
+  
+  .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 100; align-items: center; justify-content: center; }
+  .modal.show { display: flex; }
+  .modal-content { background: #141a3a; border: 1px solid #2a3260; border-radius: 16px; padding: 25px; width: 90%; max-width: 450px; max-height: 80vh; overflow-y: auto; }
+  .modal-content h3 { margin-bottom: 15px; font-size: 20px; }
+  .modal-content .close-btn { background: #2563eb; color: white; border: none; border-radius: 8px; padding: 10px 20px; cursor: pointer; margin-top: 15px; width: 100%; font-size: 14px; }
+  .modal-content .close-btn:hover { background: #1d4ed8; }
+  .modal-content .info-row { margin-bottom: 10px; line-height: 1.6; }
+  .modal-content .info-label { color: #8a94b8; }
+  .modal-content .info-value { color: white; font-weight: 600; }
+  
+  .pago-item { background: #0d1230; border: 1px solid #2a3260; border-radius: 8px; padding: 12px; margin-bottom: 10px; }
+  .pago-item .pago-concepto { font-weight: 600; margin-bottom: 5px; }
+  .pago-item .pago-detalle { font-size: 13px; color: #8a94b8; }
+  .pago-item .pago-estado { font-size: 13px; margin-top: 5px; }
+  .pago-item .pagado { color: #4ade80; }
+  .pago-item .pendiente { color: #ef4444; }
+  
+  .resumen-pagos { display: flex; justify-content: space-between; margin-bottom: 15px; padding: 10px; background: #0d1230; border-radius: 8px; }
+  .resumen-pagos div { text-align: center; flex: 1; }
+  .resumen-pagos .num { font-size: 16px; font-weight: 700; color: #5b9aff; }
+  .resumen-pagos .lbl { font-size: 11px; color: #8a94b8; }
 </style>
 </head>
 <body>
 
 <div class="logo-box">
-  <div class="top-icons"><span>🏥</span><span>⚕️</span><span>😊</span></div>
-  <div class="dni-label">ISPI 4019</div>
-  <div class="sub">CAJA DE ASISTENCIA</div>
+  <img src="logo-ispi.png" alt="ISPI 4019">
 </div>
 
 <h1>MI CUENTA ISPI</h1>
@@ -71,7 +97,7 @@
 
   <div class="input-group">
     <span class="icon">👤</span>
-    <input type="text" id="dniInput" inputmode="numeric" pattern="[0-9]*" placeholder="Ingresá tu DNI" maxlength="8" autocomplete="off">
+    <input type="text" id="dniInput" inputmode="numeric" pattern="[0-9]*" placeholder="Ej: 46999030" maxlength="8" autocomplete="off">
   </div>
 
   <p class="error-msg" id="errorMsg">El DNI debe tener entre 7 y 8 dígitos</p>
@@ -80,59 +106,259 @@
 
   <div class="result" id="result">
     <div><span class="label">DNI:</span> <span class="value" id="resDni"></span></div>
-    <div><span class="label">Afiliado:</span> <span class="value" id="resNombre"></span></div>
-    <div><span class="label">Estado:</span> <span class="value" style="color:#4ade80;">Activo ✅</span></div>
-    <div><span class="label">Saldo:</span> <span class="value" id="resSaldo"></span></div>
+    <div><span class="label">Alumno:</span> <span class="value" id="resNombre"></span></div>
+    <div><span class="label">Carrera:</span> <span class="value" id="resCarrera"></span></div>
+    <div><span class="label">Curso:</span> <span class="value" id="resCurso"></span></div>
   </div>
 
   <p class="privacy">🔒 Tus datos están protegidos y son confidenciales</p>
+</div>
+
+<div class="accesos-rapidos">
+  <h2>Accesos rápidos</h2>
+  
+  <div class="acceso-card" onclick="abrirModal('historial')">
+    <div class="icon">🕐</div>
+    <div class="text">Historial de pagos</div>
+  </div>
+  
+  <div class="acceso-card" onclick="abrirModal('comprobantes')">
+    <div class="icon">⬇️</div>
+    <div class="text">Descargar comprobantes</div>
+  </div>
+  
+  <div class="acceso-card" onclick="abrirModal('academica')">
+    <div class="icon">ℹ️</div>
+    <div class="text">Información académica</div>
+  </div>
+  
+  <div class="acceso-card" onclick="abrirModal('ayuda')">
+    <div class="icon">🎧</div>
+    <div class="text">Ayuda y contacto</div>
+  </div>
 </div>
 
 <div class="bottom-nav">
   <div class="nav-item active"><span class="icon">🏠</span><span>Inicio</span></div>
   <div class="nav-item"><span class="icon">📋</span><span>Estado de cuenta</span></div>
   <div class="nav-item"><span class="icon">🕐</span><span>Historial</span></div>
-  <div class="nav-item"><span class="icon"></span><span>Perfil</span></div>
+  <div class="nav-item"><span class="icon">👤</span><span>Perfil</span></div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="modal-content" id="modalContent">
+    <h3 id="modalTitle"></h3>
+    <div id="modalBody"></div>
+    <button class="close-btn" onclick="cerrarModal()">Cerrar</button>
+  </div>
 </div>
 
 <script>
+  // Credenciales de Supabase proporcionadas
+  const SUPABASE_URL = 'https://zkgtekqdraiktgybzejb.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_of5g50AOWrJ9NGEVIC2QZQ_UyGg74dx';
+  
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  let alumnoActual = null;
+  let pagosActuales = [];
+
   const dniInput = document.getElementById('dniInput');
   const btnConsultar = document.getElementById('btnConsultar');
   const errorMsg = document.getElementById('errorMsg');
   const result = document.getElementById('result');
 
+  // Solo permitir números
   dniInput.addEventListener('input', (e) => {
     e.target.value = e.target.value.replace(/[^0-9]/g, '');
     errorMsg.classList.remove('show');
     result.classList.remove('show');
   });
 
+  // Consultar con Enter
   dniInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') consultar();
   });
 
+  // Consultar con botón
   btnConsultar.addEventListener('click', consultar);
 
-  function consultar() {
+  async function consultar() {
     const dni = dniInput.value.trim();
     if (dni.length < 7 || dni.length > 8) {
+      errorMsg.textContent = 'El DNI debe tener entre 7 y 8 dígitos';
       errorMsg.classList.add('show');
       result.classList.remove('show');
       return;
     }
     errorMsg.classList.remove('show');
     btnConsultar.disabled = true;
-    btnConsultar.textContent = ' Consultando...';
+    btnConsultar.textContent = '⏳ Consultando...';
 
-    setTimeout(() => {
+    try {
+      // 1. Buscar alumno por DNI
+      const { data: alumno, error } = await supabase
+        .from('alumnos')
+        .select('*')
+        .eq('dni', dni)
+        .maybeSingle();
+
+      if (error || !alumno) {
+        btnConsultar.disabled = false;
+        btnConsultar.textContent = '🔍 Consultar';
+        errorMsg.textContent = 'No se encontró ningún alumno con ese DNI';
+        errorMsg.classList.add('show');
+        result.classList.remove('show');
+        alumnoActual = null;
+        pagosActuales = [];
+        return;
+      }
+
+      alumnoActual = alumno;
+
+      // 2. Buscar pagos del alumno
+      const { data: pagos, error: errorPagos } = await supabase
+        .from('pagos')
+        .select('*')
+        .eq('alumno_id', alumno.id)
+        .order('vencimiento', { ascending: false });
+
+      pagosActuales = pagos || [];
+
       btnConsultar.disabled = false;
       btnConsultar.textContent = '🔍 Consultar';
-      document.getElementById('resDni').textContent = dni;
-      document.getElementById('resNombre').textContent = 'AFILIADO EJEMPLO';
-      document.getElementById('resSaldo').textContent = '$ 0,00';
+
+      document.getElementById('resDni').textContent = alumno.dni;
+      document.getElementById('resNombre').textContent = alumno.nombre + ' ' + alumno.apellido;
+      document.getElementById('resCarrera').textContent = alumno.carrera;
+      document.getElementById('resCurso').textContent = alumno.curso + '° año';
       result.classList.add('show');
-    }, 1200);
+
+    } catch (err) {
+      console.error(err);
+      btnConsultar.disabled = false;
+      btnConsultar.textContent = '🔍 Consultar';
+      errorMsg.textContent = 'Error de conexión. Revisá la consola (F12).';
+      errorMsg.classList.add('show');
+    }
   }
+
+  function abrirModal(tipo) {
+    const modal = document.getElementById('modal');
+    const title = document.getElementById('modalTitle');
+    const body = document.getElementById('modalBody');
+
+    if (!alumnoActual) {
+      title.textContent = 'Atención';
+      body.innerHTML = '<div class="info-row">Primero consultá un DNI válido para ver la información.</div>';
+      modal.classList.add('show');
+      return;
+    }
+
+    if (tipo === 'historial') {
+      title.textContent = 'Historial de pagos';
+      
+      const pagados = pagosActuales.filter(p => p.pagado === true).length;
+      const pendientes = pagosActuales.filter(p => p.pagado !== true).length;
+      const totalPagado = pagosActuales.filter(p => p.pagado === true).reduce((sum, p) => sum + (parseFloat(p.importe) || 0), 0);
+      const totalPendiente = pagosActuales.filter(p => p.pagado !== true).reduce((sum, p) => sum + (parseFloat(p.importe) || 0), 0);
+
+      let html = `
+        <div class="resumen-pagos">
+          <div><div class="num">${pagados}</div><div class="lbl">Pagadas</div></div>
+          <div><div class="num">${pendientes}</div><div class="lbl">Pendientes</div></div>
+          <div><div class="num">$${totalPagado.toLocaleString('es-AR')}</div><div class="lbl">Abonado</div></div>
+          <div><div class="num">$${totalPendiente.toLocaleString('es-AR')}</div><div class="lbl">A deber</div></div>
+        </div>
+      `;
+
+      if (pagosActuales.length === 0) {
+        html += '<div class="info-row">No hay registros de pagos para este alumno.</div>';
+      } else {
+        pagosActuales.forEach(pago => {
+          const fecha = pago.vencimiento ? new Date(pago.vencimiento + 'T00:00:00').toLocaleDateString('es-AR') : 'Sin fecha';
+          const estado = pago.pagado === true
+            ? '<span class="pagado">✅ Pagada</span>' 
+            : '<span class="pendiente">⏳ Pendiente</span>';
+          html += `
+            <div class="pago-item">
+              <div class="pago-concepto">${pago.concepto || 'Cuota'}</div>
+              <div class="pago-detalle">Vencimiento: ${fecha} | Importe: $${(parseFloat(pago.importe) || 0).toLocaleString('es-AR')}</div>
+              <div class="pago-estado">${estado}</div>
+            </div>
+          `;
+        });
+      }
+      body.innerHTML = html;
+
+    } else if (tipo === 'comprobantes') {
+      title.textContent = 'Descargar comprobantes';
+      const pagosPagados = pagosActuales.filter(p => p.pagado === true);
+      
+      if (pagosPagados.length === 0) {
+        body.innerHTML = '<div class="info-row">No hay pagos registrados para descargar comprobantes.</div>';
+      } else {
+        let html = '<div class="info-row" style="margin-bottom:10px; border-bottom: 1px solid #2a3260; padding-bottom: 10px;">Alumno: <strong>' + alumnoActual.nombre + ' ' + alumnoActual.apellido + '</strong><br>DNI: <strong>' + alumnoActual.dni + '</strong></div>';
+        pagosPagados.forEach((pago) => {
+          const fecha = pago.vencimiento ? new Date(pago.vencimiento + 'T00:00:00').toLocaleDateString('es-AR') : 'Sin fecha';
+          html += `
+            <button class="close-btn" onclick="descargarComprobante(${pagosActuales.indexOf(pago)})" style="margin-top:8px; text-align: left; display: flex; align-items: center; gap: 8px;">
+              <span>⬇️</span> ${pago.concepto || 'Cuota'} - ${fecha} - $${(parseFloat(pago.importe) || 0).toLocaleString('es-AR')}
+            </button>
+          `;
+        });
+        body.innerHTML = html;
+      }
+
+    } else if (tipo === 'academica') {
+      title.textContent = 'Información académica';
+      body.innerHTML = `
+        <div class="info-row"><span class="info-label">Alumno:</span> <span class="info-value">${alumnoActual.nombre} ${alumnoActual.apellido}</span></div>
+        <div class="info-row"><span class="info-label">DNI:</span> <span class="info-value">${alumnoActual.dni}</span></div>
+        <div class="info-row"><span class="info-label">Carrera:</span> <span class="info-value">${alumnoActual.carrera}</span></div>
+        <div class="info-row"><span class="info-label">Curso:</span> <span class="info-value">${alumnoActual.curso}° año</span></div>
+        <div class="info-row"><span class="info-label">Estado:</span> <span class="info-value" style="color:#4ade80;">Regular ✅</span></div>
+      `;
+
+    } else if (tipo === 'ayuda') {
+      title.textContent = 'Ayuda y contacto';
+      body.innerHTML = `
+        <div class="info-row"><span class="info-label">Email:</span> <span class="info-value">info@ispi4019.edu.ar</span></div>
+        <div class="info-row"><span class="info-label">Teléfono:</span> <span class="info-value">(011) 4567-8900</span></div>
+        <div class="info-row"><span class="info-label">Horario:</span> <span class="info-value">Lunes a Viernes 8:00 - 16:00</span></div>
+        <div class="info-row"><span class="info-label">Dirección:</span> <span class="info-value">Av. Ejemplo 1234</span></div>
+      `;
+    }
+
+    modal.classList.add('show');
+  }
+
+  function cerrarModal() {
+    document.getElementById('modal').classList.remove('show');
+  }
+
+  function descargarComprobante(index) {
+    const pago = pagosActuales[index];
+    if (!pago || !alumnoActual) return;
+    
+    const fecha = pago.vencimiento ? new Date(pago.vencimiento + 'T00:00:00').toLocaleDateString('es-AR') : 'Sin fecha';
+    const contenido = `COMPROBANTE DE PAGO - ISPI 4019\n========================================\n\nAlumno: ${alumnoActual.nombre} ${alumnoActual.apellido}\nDNI: ${alumnoActual.dni}\nCarrera: ${alumnoActual.carrera}\nCurso: ${alumnoActual.curso}° año\n\n----------------------------------------\nConcepto: ${pago.concepto}\nVencimiento: ${fecha}\nImporte: $${(parseFloat(pago.importe) || 0).toLocaleString('es-AR')}\nEstado: PAGADO\n----------------------------------------\n\nFecha de emisión: ${new Date().toLocaleDateString('es-AR')}\n\nISPI 4019 - Caja de Asistencia`;
+    
+    const blob = new Blob([contenido], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `comprobante_${alumnoActual.dni}_${pago.id}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  // Cerrar modal al hacer click fuera
+  document.getElementById('modal').addEventListener('click', (e) => {
+    if (e.target.id === 'modal') cerrarModal();
+  });
 </script>
 
 </body>
