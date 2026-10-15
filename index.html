@@ -27,24 +27,9 @@
   .input-group input { background: transparent; border: none; outline: none; color: white; font-size: 16px; width: 100%; }
   .input-group input::placeholder { color: #5a6388; }
   
-  /* Mensaje de error - ROJO para formato incorrecto */
+  /* Estilos actualizados para el mensaje de error / administrador */
   .error-msg { 
-    color: #ef4444; 
-    font-size: 14px; 
-    margin-bottom: 15px; 
-    display: none; 
-    text-align: center; 
-    background: rgba(239, 68, 68, 0.1); 
-    padding: 12px; 
-    border-radius: 8px; 
-    border: 1px solid #ef4444; 
-    line-height: 1.5; 
-  }
-  .error-msg.show { display: block; }
-  
-  /* Mensaje de administrador - AMARILLO para DNI no registrado */
-  .admin-msg { 
-    color: #fbbf24; 
+    color: #fbbf24; /* Amarillo para alerta de administrador */
     font-size: 14px; 
     margin-bottom: 15px; 
     display: none; 
@@ -55,7 +40,12 @@
     border: 1px solid #fbbf24; 
     line-height: 1.5; 
   }
-  .admin-msg.show { display: block; }
+  .error-msg.show { display: block; }
+  .error-msg.format-error {
+    color: #ef4444; /* Rojo para error de formato de dígitos */
+    background: rgba(239, 68, 68, 0.1);
+    border-color: #ef4444;
+  }
   
   .btn-consultar { width: 100%; background: #2563eb; color: white; border: none; border-radius: 10px; padding: 15px; font-size: 16px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s; }
   .btn-consultar:hover { background: #1d4ed8; }
@@ -127,11 +117,8 @@
     <input type="text" id="dniInput" inputmode="numeric" pattern="[0-9]*" placeholder="Ej: 46999030" maxlength="8" autocomplete="off">
   </div>
 
-  <!-- Mensaje de error de formato (rojo) -->
+  <!-- Mensaje de error único que cambia de color según el caso -->
   <p class="error-msg" id="errorMsg"></p>
-  
-  <!-- Mensaje de administrador (amarillo) -->
-  <p class="admin-msg" id="adminMsg"></p>
 
   <button class="btn-consultar" id="btnConsultar">🔍 Consultar</button>
 
@@ -164,7 +151,7 @@
   </div>
   
   <div class="acceso-card" onclick="abrirModal('ayuda')">
-    <div class="icon"></div>
+    <div class="icon">🎧</div>
     <div class="text">Ayuda y contacto</div>
   </div>
 </div>
@@ -195,13 +182,12 @@
   const dniInput = document.getElementById('dniInput');
   const btnConsultar = document.getElementById('btnConsultar');
   const errorMsg = document.getElementById('errorMsg');
-  const adminMsg = document.getElementById('adminMsg');
   const result = document.getElementById('result');
 
+  // Solo permitir números y limpiar errores al escribir
   dniInput.addEventListener('input', (e) => {
     e.target.value = e.target.value.replace(/[^0-9]/g, '');
-    errorMsg.classList.remove('show');
-    adminMsg.classList.remove('show');
+    errorMsg.classList.remove('show', 'format-error');
     result.classList.remove('show');
   });
 
@@ -214,46 +200,45 @@
   async function consultar() {
     const dni = dniInput.value.trim();
     
-    // 1. Validación de formato
+    // 1. Validación de formato (7 u 8 dígitos)
     if (dni.length < 7 || dni.length > 8) {
       errorMsg.textContent = 'El DNI debe tener entre 7 y 8 dígitos.';
-      errorMsg.classList.add('show');
-      adminMsg.classList.remove('show');
+      errorMsg.classList.add('show', 'format-error'); // Se muestra en rojo
       result.classList.remove('show');
       return;
     }
     
-    errorMsg.classList.remove('show');
-    adminMsg.classList.remove('show');
+    // Limpiar errores previos antes de consultar
+    errorMsg.classList.remove('show', 'format-error');
     btnConsultar.disabled = true;
     btnConsultar.textContent = '⏳ Consultando...';
 
     try {
-      // 2. CONSULTA A SUPABASE - Validación de existencia
+      // 2. Buscar alumno por DNI en la base de datos
       const { data: alumno, error } = await supabase
         .from('alumnos')
         .select('*')
         .eq('dni', dni)
         .maybeSingle();
 
-      // 3. SI NO EXISTE: Mensaje amarillo + BLOQUEO
+      // 3. VALIDACIÓN CLAVE: Si no existe, muestra el mensaje y DETIENE el proceso
       if (error || !alumno) {
         btnConsultar.disabled = false;
         btnConsultar.textContent = '🔍 Consultar';
-        adminMsg.textContent = '⚠️ DNI inválido. Este DNI no está registrado en la base de datos. Debe hablar con el administrador para que lo registre y le permita continuar.';
-        adminMsg.classList.add('show');
-        errorMsg.classList.remove('show');
+        errorMsg.textContent = '⚠️ DNI inválido. Este DNI no está registrado en la base de datos. Debe hablar con el administrador para que lo registre y le permita continuar.';
+        errorMsg.classList.add('show'); // Se muestra en amarillo (alerta)
         result.classList.remove('show');
         alumnoActual = null;
         pagosActuales = [];
-        return; // DETIENE TODO
+        return; // <-- ESTO DETIENE LA EJECUCIÓN Y NO DEJA SEGUIR
       }
 
-      // 4. SI EXISTE: Continúa normal
+      // 4. Si existe, continúa con normalidad (código original funcional)
       alumnoActual = alumno;
 
+      // NOTA: Si tu tabla se llama 'cuotas' en lugar de 'pagos', cambia 'pagos' por 'cuotas' en la línea de abajo.
       const { data: pagos, error: errorPagos } = await supabase
-        .from('pagos')
+        .from('pagos') 
         .select('*')
         .eq('alumno_id', alumno.id)
         .order('vencimiento', { ascending: false });
@@ -274,7 +259,7 @@
       btnConsultar.disabled = false;
       btnConsultar.textContent = '🔍 Consultar';
       errorMsg.textContent = 'Error de conexión. Revisá la consola (F12).';
-      errorMsg.classList.add('show');
+      errorMsg.classList.add('show', 'format-error');
     }
   }
 
@@ -283,10 +268,10 @@
     const title = document.getElementById('modalTitle');
     const body = document.getElementById('modalBody');
 
-    // BLOQUEO: Si no hay alumno válido, no deja abrir nada
+    // Bloqueo de seguridad: si no hay alumno válido, no deja abrir nada
     if (!alumnoActual) {
-      title.textContent = '⚠️ Acceso denegado';
-      body.innerHTML = '<div class="info-row" style="color:#fbbf24; text-align:center; font-size:15px; padding:20px;">Primero consultá un DNI válido registrado en la base de datos.</div>';
+      title.textContent = 'Atención';
+      body.innerHTML = '<div class="info-row">Primero consultá un DNI válido registrado para ver la información.</div>';
       modal.classList.add('show');
       return;
     }
