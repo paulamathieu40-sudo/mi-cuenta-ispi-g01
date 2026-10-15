@@ -27,8 +27,25 @@
   .input-group input { background: transparent; border: none; outline: none; color: white; font-size: 16px; width: 100%; }
   .input-group input::placeholder { color: #5a6388; }
   
-  .error-msg { color: #ef4444; font-size: 13px; margin-bottom: 10px; display: none; }
+  /* Estilos actualizados para el mensaje de error / administrador */
+  .error-msg { 
+    color: #fbbf24; /* Amarillo para alerta de administrador */
+    font-size: 14px; 
+    margin-bottom: 15px; 
+    display: none; 
+    text-align: center; 
+    background: rgba(251, 191, 36, 0.1); 
+    padding: 12px; 
+    border-radius: 8px; 
+    border: 1px solid #fbbf24; 
+    line-height: 1.5; 
+  }
   .error-msg.show { display: block; }
+  .error-msg.format-error {
+    color: #ef4444; /* Rojo para error de formato de dígitos */
+    background: rgba(239, 68, 68, 0.1);
+    border-color: #ef4444;
+  }
   
   .btn-consultar { width: 100%; background: #2563eb; color: white; border: none; border-radius: 10px; padding: 15px; font-size: 16px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s; }
   .btn-consultar:hover { background: #1d4ed8; }
@@ -100,7 +117,8 @@
     <input type="text" id="dniInput" inputmode="numeric" pattern="[0-9]*" placeholder="Ej: 46999030" maxlength="8" autocomplete="off">
   </div>
 
-  <p class="error-msg" id="errorMsg">El DNI debe tener entre 7 y 8 dígitos</p>
+  <!-- Mensaje de error único que cambia de color según el caso -->
+  <p class="error-msg" id="errorMsg"></p>
 
   <button class="btn-consultar" id="btnConsultar">🔍 Consultar</button>
 
@@ -154,10 +172,8 @@
 </div>
 
 <script>
-  // Credenciales de Supabase proporcionadas
   const SUPABASE_URL = 'https://zkgtekqdraiktgybzejb.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_of5g50AOWrJ9NGEVIC2QZQ_UyGg74dx';
-  
   const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
   let alumnoActual = null;
@@ -168,57 +184,61 @@
   const errorMsg = document.getElementById('errorMsg');
   const result = document.getElementById('result');
 
-  // Solo permitir números
+  // Solo permitir números y limpiar errores al escribir
   dniInput.addEventListener('input', (e) => {
     e.target.value = e.target.value.replace(/[^0-9]/g, '');
-    errorMsg.classList.remove('show');
+    errorMsg.classList.remove('show', 'format-error');
     result.classList.remove('show');
   });
 
-  // Consultar con Enter
   dniInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') consultar();
   });
 
-  // Consultar con botón
   btnConsultar.addEventListener('click', consultar);
 
   async function consultar() {
     const dni = dniInput.value.trim();
+    
+    // 1. Validación de formato (7 u 8 dígitos)
     if (dni.length < 7 || dni.length > 8) {
-      errorMsg.textContent = 'El DNI debe tener entre 7 y 8 dígitos';
-      errorMsg.classList.add('show');
+      errorMsg.textContent = 'El DNI debe tener entre 7 y 8 dígitos.';
+      errorMsg.classList.add('show', 'format-error'); // Se muestra en rojo
       result.classList.remove('show');
       return;
     }
-    errorMsg.classList.remove('show');
+    
+    // Limpiar errores previos antes de consultar
+    errorMsg.classList.remove('show', 'format-error');
     btnConsultar.disabled = true;
     btnConsultar.textContent = '⏳ Consultando...';
 
     try {
-      // 1. Buscar alumno por DNI
+      // 2. Buscar alumno por DNI en la base de datos
       const { data: alumno, error } = await supabase
         .from('alumnos')
         .select('*')
         .eq('dni', dni)
         .maybeSingle();
 
+      // 3. VALIDACIÓN CLAVE: Si no existe, muestra el mensaje y DETIENE el proceso
       if (error || !alumno) {
         btnConsultar.disabled = false;
         btnConsultar.textContent = '🔍 Consultar';
-        errorMsg.textContent = 'No se encontró ningún alumno con ese DNI';
-        errorMsg.classList.add('show');
+        errorMsg.textContent = '⚠️ DNI inválido. Este DNI no está registrado en la base de datos. Debe hablar con el administrador para que lo registre y le permita continuar.';
+        errorMsg.classList.add('show'); // Se muestra en amarillo (alerta)
         result.classList.remove('show');
         alumnoActual = null;
         pagosActuales = [];
-        return;
+        return; // <-- ESTO DETIENE LA EJECUCIÓN Y NO DEJA SEGUIR
       }
 
+      // 4. Si existe, continúa con normalidad (código original funcional)
       alumnoActual = alumno;
 
-      // 2. Buscar pagos del alumno
+      // NOTA: Si tu tabla se llama 'cuotas' en lugar de 'pagos', cambia 'pagos' por 'cuotas' en la línea de abajo.
       const { data: pagos, error: errorPagos } = await supabase
-        .from('pagos')
+        .from('pagos') 
         .select('*')
         .eq('alumno_id', alumno.id)
         .order('vencimiento', { ascending: false });
@@ -239,7 +259,7 @@
       btnConsultar.disabled = false;
       btnConsultar.textContent = '🔍 Consultar';
       errorMsg.textContent = 'Error de conexión. Revisá la consola (F12).';
-      errorMsg.classList.add('show');
+      errorMsg.classList.add('show', 'format-error');
     }
   }
 
@@ -248,16 +268,16 @@
     const title = document.getElementById('modalTitle');
     const body = document.getElementById('modalBody');
 
+    // Bloqueo de seguridad: si no hay alumno válido, no deja abrir nada
     if (!alumnoActual) {
       title.textContent = 'Atención';
-      body.innerHTML = '<div class="info-row">Primero consultá un DNI válido para ver la información.</div>';
+      body.innerHTML = '<div class="info-row">Primero consultá un DNI válido registrado para ver la información.</div>';
       modal.classList.add('show');
       return;
     }
 
     if (tipo === 'historial') {
       title.textContent = 'Historial de pagos';
-      
       const pagados = pagosActuales.filter(p => p.pagado === true).length;
       const pendientes = pagosActuales.filter(p => p.pagado !== true).length;
       const totalPagado = pagosActuales.filter(p => p.pagado === true).reduce((sum, p) => sum + (parseFloat(p.importe) || 0), 0);
@@ -277,9 +297,7 @@
       } else {
         pagosActuales.forEach(pago => {
           const fecha = pago.vencimiento ? new Date(pago.vencimiento + 'T00:00:00').toLocaleDateString('es-AR') : 'Sin fecha';
-          const estado = pago.pagado === true
-            ? '<span class="pagado">✅ Pagada</span>' 
-            : '<span class="pendiente">⏳ Pendiente</span>';
+          const estado = pago.pagado === true ? '<span class="pagado">✅ Pagada</span>' : '<span class="pendiente">⏳ Pendiente</span>';
           html += `
             <div class="pago-item">
               <div class="pago-concepto">${pago.concepto || 'Cuota'}</div>
@@ -355,7 +373,6 @@
     URL.revokeObjectURL(url);
   }
 
-  // Cerrar modal al hacer click fuera
   document.getElementById('modal').addEventListener('click', (e) => {
     if (e.target.id === 'modal') cerrarModal();
   });
